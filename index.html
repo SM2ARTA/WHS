@@ -100,7 +100,7 @@ function App(){
     topItems.sort(function(a,b){return b.value-a.value;});
     var mk=function(obj,cm){return Object.entries(obj).map(function(en){return{name:en[0].length>20?en[0].slice(0,18)+"..":en[0],fullName:en[0],value:en[1],color:cm[en[0]]||TD};}).sort(function(a,b){return b.value-a.value;});};
     var avgDays=0,dc=0;stock.forEach(function(s){if(s.days!=null){avgDays+=s.days;dc++;}});avgDays=dc?Math.round(avgDays/dc):0;
-    return{totalSKU:totalSKU,totalStock:totalStock,totalRes:totalRes,totalAvail:totalAvail,totalVal:totalVal,hasN:hasN,ownerValArr:mk(byOwnerVal,OW_C),ownerQtyArr:mk(byOwnerQty,OW_C),sourceArr:mk(bySource,SRC_C),daysBuckets:daysBuckets,topItems:topItems.slice(0,15),reservedItems:reservedItems,byNomType:byNomType,byNomTypeVal:byNomTypeVal,avgDays:avgDays,catalogSize:nomen?nomen.length:0};
+    return{totalSKU:totalSKU,totalStock:totalStock,totalRes:totalRes,totalAvail:totalAvail,totalVal:totalVal,hasN:hasN,ownerValArr:mk(byOwnerVal,OW_C),ownerQtyArr:mk(byOwnerQty,OW_C),sourceArr:mk(bySource,SRC_C),daysBuckets:daysBuckets,topItems:topItems,reservedItems:reservedItems,byNomType:byNomType,byNomTypeVal:byNomTypeVal,avgDays:avgDays,catalogSize:nomen?nomen.length:0};
   },[stock,nomen]);
   var has=stock&&stock.length>0&&st;
 
