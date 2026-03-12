@@ -213,9 +213,10 @@ function processAndRender() {
     if(kl.includes('v26')||kl.includes('vision')) { extract(val,key,'V26').forEach(it=>{(it.direction==='outbound'?outI:inI).push(it);}); }
   });
   log(`Parsed: ${inI.length} inbound, ${outI.length} outbound`);
-  // Debug: show first few items with their direction reasoning
-  [...inI.slice(0,3),...outI.slice(0,3)].forEach(it => {
-    log(`  → [${it.direction}] "${it.itemName}" container="${it.container}" lsr="${it.lsr}" venue="${it.venue}" keys=${Object.keys(it._raw).join(',')}`);
+  // Debug: dump ALL fields of outbound items to find LSR field name
+  outI.slice(0,5).forEach(it => {
+    log(`  OUTBOUND → "${it.itemName}" lsr="${it.lsr}" venue="${it.venue}"`);
+    log(`    RAW KEYS: ${JSON.stringify(it._raw).substring(0,500)}`);
   });
   const ib=bkt(inI,dates), ob=bkt(outI,dates);
   const fi=shift(ib,dates,inI), fo=shift(ob,dates,outI);
@@ -246,13 +247,30 @@ function pr(entry,sk,src,idx) {
   const date=fv(['date','arrival','delivery','dispatch','ship','eta','scheduled'])||fv(['day','when']);
   const vendor=fv(['vendor','supplier','carrier','company','from','shipper']);
   const itemName=fv(['name','sku','item','material','product','nomenclature','nom']);
-  const venue=fv(['venue','destination','site','location','cluster','to','dest']);
+  const venueRaw=fv(['venue','destination','site','location','cluster','to','dest']);
   const pallets=fv(['pallet','plt']);
   const pieces=fv(['piece','pcs','qty','quantity','units','count']);
   const truckId=fv(['truck','truckId','fp','fingerprint']);
   const type=fv(['type','category','kind','mode']);
   const direction=fv(['direction','flow','dir']);
-  const lsr=fv(['lsr','LSR','request','requisition','order_num','orderNum']);
+  
+  // LSR detection: exact key match first, then includes, then scan values for LSR pattern
+  let lsr = null;
+  // 1) Exact key match (case-insensitive)
+  for(const k of Object.keys(entry)) { if(k.toUpperCase()==='LSR' && entry[k]) { lsr=entry[k]; break; } }
+  // 2) Key contains 'lsr'
+  if(!lsr) { for(const k of Object.keys(entry)) { if(k.toLowerCase().includes('lsr') && entry[k]) { lsr=entry[k]; break; } } }
+  // 3) Scan all string values for LSR pattern (e.g. "LSR625-001")
+  if(!lsr) { for(const k of Object.keys(entry)) { const v=String(entry[k]||''); if(/^LSR[\d\-]+/i.test(v)) { lsr=v; break; } } }
+  
+  // Venue mapping: hardcode known venues to friendly names
+  const VENUE_MAP = {
+    'MEX CDMX / RGS': 'Mexico City',
+    'MEX CDMX/RGS': 'Mexico City',
+    'CDMX / RGS': 'Mexico City',
+    'CDMX/RGS': 'Mexico City',
+  };
+  const venue = venueRaw ? (VENUE_MAP[String(venueRaw).trim()] || String(venueRaw)) : null;
   
   // Container: look for shipping container IDs AND local delivery names
   const containerRaw=fv(['container','shipment','booking','bol','bl','consignment'])||fv(['group','batch','load']);
@@ -295,11 +313,47 @@ function pr(entry,sk,src,idx) {
   if(type){const t=String(type).toLowerCase();if(t.includes('ffe')||t.includes('ff&e'))badge='FF&E';else if(t.includes('cort'))badge='CORT';else if(t.includes('freight'))badge='FREIGHT';else if(t.includes('truck')||t.includes('dispatch'))badge='TRUCK';else if(t.includes('manual'))badge='MANUAL';else badge=String(type).toUpperCase().substring(0,10);}
 
   const dn=itemName?String(itemName):(vendor?String(vendor):`${src} #${idx}`);
-  return {date:date?String(date):null,vendor:dn,itemName:dn,venue:venue?String(venue):null,pallets:pallets?Number(pallets):0,pieces:pieces?Number(pieces):0,truckId:truckId?String(truckId):null,type:badge,direction:dir,source:src,container:container,lsr:lsr?String(lsr):null,_raw:entry};
+  return {date:date?String(date):null,vendor:dn,itemName:dn,venue:venue,pallets:pallets?Number(pallets):0,pieces:pieces?Number(pieces):0,truckId:truckId?String(truckId):null,type:badge,direction:dir,source:src,container:container,lsr:lsr?String(lsr):null,_raw:entry};
 }
 
 function bkt(items,dates){return dates.map((d,i)=>({date:d,idx:i,items:items.filter(it=>sd(it.date,d))}));}
-function shift(bkts,dates,all){const r=[...bkts];for(let i=0;i<r.length;i++){if(r[i].items.length===0){for(let o=1;o<=21;o++){const fd=new Date(dates[0]);fd.setDate(fd.getDate()+i+o);const fi=all.filter(it=>sd(it.date,fd));if(fi.length>0){r[i]={date:fd,idx:i,items:fi,shifted:true};break;}}}}return r;}
+function shift(bkts,dates,all){
+  const r=[...bkts];
+  // Only shift the LAST empty slot to show next active date
+  // Earlier empty days stay as-is showing "Nothing planned"
+  // Find last slot that's empty
+  let lastEmpty = -1;
+  for(let i=r.length-1; i>=0; i--){ if(r[i].items.length===0){ lastEmpty=i; break; } }
+  // If ALL slots are empty, shift only the last one
+  // If some have data, don't shift any
+  const allEmpty = r.every(b=>b.items.length===0);
+  if(allEmpty && lastEmpty>=0){
+    for(let o=1;o<=21;o++){
+      const fd=new Date(dates[0]);fd.setDate(fd.getDate()+lastEmpty+o);
+      const fi=all.filter(it=>sd(it.date,fd));
+      if(fi.length>0){r[lastEmpty]={date:fd,idx:lastEmpty,items:fi,shifted:true};break;}
+    }
+  } else if(!allEmpty) {
+    // Some slots have data, some don't — shift individual empty ones only if there's a gap
+    // (e.g. Today has data, Tomorrow empty, Day3 has data — shift Tomorrow to next active)
+    for(let i=0;i<r.length;i++){
+      if(r[i].items.length===0){
+        // Check if a later slot already covers the next active date — if so don't duplicate
+        for(let o=1;o<=21;o++){
+          const fd=new Date(dates[0]);fd.setDate(fd.getDate()+i+o);
+          const fi=all.filter(it=>sd(it.date,fd));
+          if(fi.length>0){
+            // Make sure no other slot already shows this date
+            const alreadyShown = r.some((b,bi)=> bi!==i && fk(b.date)===fk(fd));
+            if(!alreadyShown){r[i]={date:fd,idx:i,items:fi,shifted:true};}
+            break;
+          }
+        }
+      }
+    }
+  }
+  return r;
+}
 
 // ── GROUPING ──
 function grpIn(items){const g={};items.forEach(it=>{const gk=it.container||it.venue||it.type||'Other';if(!g[gk])g[gk]={label:gk,type:it.type,venue:it.venue,pallets:0,pieces:0,skus:{},items:[]};const gr=g[gk];gr.pallets+=it.pallets||0;gr.pieces+=it.pieces||0;gr.items.push(it);const sk=it.itemName;if(!gr.skus[sk])gr.skus[sk]={name:sk,pallets:0,pieces:0,count:0};gr.skus[sk].pallets+=it.pallets||0;gr.skus[sk].pieces+=it.pieces||0;gr.skus[sk].count++;});return Object.values(g);}
