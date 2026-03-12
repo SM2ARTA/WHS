@@ -160,21 +160,41 @@ function go(){
   // Keys to skip (config only, not plan or arrivals data)
   const SKIP = new Set(['lp-config','lp-nom','lp-demand','lp-truck-state']);
   
+  // Debug: log structure of key data sources
+  ['lp-plan','lp-arrivals','fm-rw','fm-nom'].forEach(k => {
+    const v = AD[k];
+    if(!v) { lg(`  KEY "${k}": not found`); return; }
+    if(Array.isArray(v)) {
+      lg(`  KEY "${k}": array[${v.length}] sample=${JSON.stringify(v[0]).substring(0,300)}`);
+    } else if(typeof v === 'object') {
+      lg(`  KEY "${k}": object keys=[${Object.keys(v).slice(0,10).join(',')}] sample=${JSON.stringify(v).substring(0,300)}`);
+    } else {
+      lg(`  KEY "${k}": ${typeof v} = ${String(v).substring(0,200)}`);
+    }
+  });
+  
   Object.keys(AD).forEach(k=>{
-    if(SKIP.has(k)) return; // skip non-plan LP keys
+    if(SKIP.has(k)) return;
     const v=AD[k],kl=k.toLowerCase();
     
-    // LP plan data
+    // LP plan + arrivals data
     if(k==='lp-plan'||k==='lp-arrivals'||(kl.includes('lp')&&!kl.includes('truck')&&!kl.includes('config')&&!kl.includes('nom')&&!kl.includes('demand'))){
-      ex(v,k,'LP').forEach(i=>{
-        // Merge LSR by truckId
+      const items = ex(v,k,'LP');
+      lg(`  Extracted ${items.length} items from "${k}"`);
+      items.forEach(i=>{
         if(!i.lsr && i.truckId && lsrMap[i.truckId]) i.lsr = lsrMap[i.truckId];
         if(!i.lsr && i.truckId && lsrMap[String(i.truckId)]) i.lsr = lsrMap[String(i.truckId)];
         (i.direction==='outbound'?oI:iI).push(i);
       });
     }
-    // LM data (but not lp-truck-state)
-    else if((kl.includes('lm')||kl.includes('last mile')||kl.includes('dispatch'))&&!kl.includes('lp')){
+    // FM-RW: LM material plan rows (contains inbound arrivals with dates)
+    else if(k==='fm-rw'){
+      const items = ex(v,k,'LP');
+      lg(`  Extracted ${items.length} items from "fm-rw" (LM data)`);
+      items.forEach(i=>{ iI.push(i); }); // fm-rw rows are all inbound arrivals
+    }
+    // LM dispatch/mile data
+    else if((kl.includes('lm')||kl.includes('last mile')||kl.includes('dispatch'))&&!kl.includes('lp')&&k!=='fm-rw'){
       ex(v,k,'LM').forEach(i=>{i.direction='outbound';oI.push(i);});
     }
     // Manual items
@@ -184,10 +204,6 @@ function go(){
     // Vision
     else if(kl.includes('v26')||kl.includes('vision')){
       ex(v,k,'V26').forEach(i=>{(i.direction==='outbound'?oI:iI).push(i);});
-    }
-    // LM-specific keys
-    else if(kl.includes('fm-rw')||kl.includes('fm-nom')){
-      // These are LM data keys - skip, handled by LM upload flow
     }
   });
   
