@@ -99,7 +99,7 @@
 <div class="ls" id="ls"><div class="lsp"></div><div class="lt">Connecting to Supabase...</div></div>
 <div class="topbar">
   <div class="topbar-left"><div class="topbar-logo">FWC26</div><div class="topbar-title">Dallas Main Logistics Center — Activity Forecast</div></div>
-  <div class="topbar-right"><span><span class="dot"></span> LIVE</span><span id="rt">30s</span><span id="ck"></span></div>
+  <div class="topbar-right"><span><span class="dot"></span> LIVE</span><span id="rt">5:00</span><span id="ck"></span></div>
 </div>
 <div class="main">
   <div class="panel panel-in"><div class="ph"><div class="pl">▼ Inbound<span class="pl-line"></span></div></div><div class="ks" id="ik"></div><div class="dc" id="id"></div></div>
@@ -111,7 +111,7 @@
 
 <script>
 const SU='https://stwopndhnxcjyomkufii.supabase.co',SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d29wbmRobnhjanlvbWt1ZmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MDgyNjgsImV4cCI6MjA4ODQ4NDI2OH0.YNhp7z5kxnzpX15Vw8NVVWaZG1-Lj3Q9uaZDiKmBvf8';
-const RS=30,TBL='shared_state',RU=`${SU}/rest/v1/${TBL}?select=*`,HD={'apikey':SK,'Authorization':`Bearer ${SK}`,'Accept':'application/json'};
+const RS=300,TBL='shared_state',RU=`${SU}/rest/v1/${TBL}?select=*`,HD={'apikey':SK,'Authorization':`Bearer ${SK}`,'Accept':'application/json'};
 const VM={'MEX CDMX / RGS':'Mexico City','MEX CDMX/RGS':'Mexico City','CDMX / RGS':'Mexico City','CDMX/RGS':'Mexico City'};
 
 let AD={},rc=RS,dl='';
@@ -123,7 +123,7 @@ function esc(s){if(!s)return'';const e=document.createElement('span');e.textCont
 async function init(){
   const lt=document.querySelector('.lt');
   try{lt.textContent='Fetching data...';await fa();document.getElementById('ls').classList.add('hide');
-    setInterval(()=>{rc--;document.getElementById('rt').textContent=`${rc}s`;if(rc<=0){rc=RS;fa();}},1000);
+    setInterval(()=>{rc--;const m=Math.floor(rc/60),s=rc%60;document.getElementById('rt').textContent=`${m}:${String(s).padStart(2,'0')}`;if(rc<=0){rc=RS;fa();}},1000);
     const ck=()=>{document.getElementById('ck').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});};ck();setInterval(ck,1000);
   }catch(e){lg('ERR:'+e.message);lt.textContent='Error: '+e.message;lt.style.color='#f87171';setTimeout(init,5000);}
 }
@@ -154,29 +154,36 @@ function go(){
   lg(`${iI.length} in, ${oI.length} out`);
 
   const td=t0();
-  // INBOUND: 3 days, shift last empty to next active
-  const iD=[aD(td,0),aD(td,1),aD(td,2)];
-  const iB=iD.map(d=>({date:d,items:iI.filter(i=>sd(i.date,d)),sh:false}));
-  if(iB.every(b=>!b.items.length)){for(let o=3;o<=21;o++){const d=aD(td,o),fi=iI.filter(i=>sd(i.date,d));if(fi.length){iB[2]={date:d,items:fi,sh:true};break;}}}
 
-  // OUTBOUND: show today through first active future date (include weekend gaps)
-  // Cap at 5 columns for readability
-  const MAX_COLS=5;
-  // Find the first day with outbound activity (from today forward)
-  let firstActive=-1;
-  for(let o=0;o<=21;o++){if(oI.some(i=>sd(i.date,aD(td,o)))){firstActive=o;break;}}
-  // Show enough days to include that active date, min 3
-  const showDays=firstActive>=0?Math.min(Math.max(firstActive+1,3),MAX_COLS):3;
-  const oB=[];
-  for(let i=0;i<showDays;i++){
-    const d=aD(td,i);
-    oB.push({date:d,items:oI.filter(it=>sd(it.date,d)),sh:false});
+  // Helper: find next N active dates from a start offset, noting skipped days
+  function findActive(items, count) {
+    const slots = [];
+    let offset = 0;
+    let skipped = []; // track skipped day names
+    while (slots.length < count && offset <= 30) {
+      const d = aD(td, offset);
+      const dayItems = items.filter(i => sd(i.date, d));
+      if (dayItems.length > 0) {
+        slots.push({ date: d, items: dayItems, sh: offset >= 3, skipped: skipped.length ? [...skipped] : null });
+        skipped = [];
+      } else {
+        // Track this skipped day
+        skipped.push(dL(d) + ' ' + fd(d));
+      }
+      offset++;
+    }
+    // If we found fewer than count, pad with "nothing upcoming" slots
+    while (slots.length < count) {
+      const d = aD(td, offset);
+      slots.push({ date: d, items: [], sh: true, skipped: skipped.length ? [...skipped] : null });
+      skipped = [];
+      offset++;
+    }
+    return slots;
   }
-  // If the active date fell outside our cap, shift the last slot to it
-  if(firstActive>=showDays){
-    const d=aD(td,firstActive),fi=oI.filter(i=>sd(i.date,d));
-    if(fi.length)oB[oB.length-1]={date:d,items:fi,sh:true};
-  }
+
+  const iB = findActive(iI, 3);
+  const oB = findActive(oI, 3);
 
   rP('in',iB);rP('out',oB);rK('in',iB);rK('out',oB);
 }
@@ -224,17 +231,22 @@ function rP(type,bkts){
   bkts.forEach((b,idx)=>{
     const empty=!b.items.length,has=!empty;
     const col=document.createElement('div');
-    let cls='dy';
-    if(idx===0&&!b.sh)cls+=' dy-today';
-    cls+=empty?' dy-emp':' dy-act';
-    if(b.sh)cls+=' dy-up';
+    let cls='dy dy-act';
+    const isToday = fk(b.date) === fk(t0());
+    if(isToday)cls+=' dy-today';
+    if(empty)cls='dy dy-emp';
     col.className=cls;
     const label=dL(b.date);
     const groups=isOut?gO(b.items):gI(b.items);
-    col.innerHTML=`<div class="dh"><div><div class="dn">${label}${b.sh?' ↗':''}</div><div class="dd">${fd(b.date)}</div></div>${has?`<div class="db">${groups.length}</div>`:''}</div><div class="dcc"></div>`;
+    // Build skipped days note
+    let skippedHtml='';
+    if(b.skipped&&b.skipped.length){
+      skippedHtml=`<div style="font-size:8px;color:var(--tm);margin-top:1px;font-style:italic;opacity:.7">${b.skipped.join(', ')} — no activity</div>`;
+    }
+    col.innerHTML=`<div class="dh"><div><div class="dn">${label}${b.sh?' ↗':''}</div><div class="dd">${fd(b.date)}</div>${skippedHtml}</div>${has?`<div class="db">${groups.length}</div>`:''}</div><div class="dcc"></div>`;
     con.appendChild(col);
     const cards=col.querySelector('.dcc');
-    if(empty)cards.innerHTML=`<div class="emp"><div class="emp-i">${isOut?'🚚':'📦'}</div><div>No activity</div></div>`;
+    if(empty)cards.innerHTML=`<div class="emp"><div class="emp-i">${isOut?'🚚':'📦'}</div><div>No upcoming activity</div></div>`;
     else groups.forEach(g=>cards.appendChild(mC(g,type)));
   });
 }
