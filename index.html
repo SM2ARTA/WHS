@@ -157,15 +157,15 @@ function go(){
   }
   lg(`All DB keys: ${Object.keys(AD).join(', ')}`);
   
-  // Keys to skip (config, not plan data)
-  const SKIP = new Set(['lp-config','lp-nom','lp-demand','lp-arrivals','lp-truck-state']);
+  // Keys to skip (config only, not plan or arrivals data)
+  const SKIP = new Set(['lp-config','lp-nom','lp-demand','lp-truck-state']);
   
   Object.keys(AD).forEach(k=>{
     if(SKIP.has(k)) return; // skip non-plan LP keys
     const v=AD[k],kl=k.toLowerCase();
     
     // LP plan data
-    if(k==='lp-plan'||(kl.includes('lp')&&!kl.includes('truck')&&!kl.includes('config')&&!kl.includes('nom')&&!kl.includes('demand')&&!kl.includes('arrival'))){
+    if(k==='lp-plan'||k==='lp-arrivals'||(kl.includes('lp')&&!kl.includes('truck')&&!kl.includes('config')&&!kl.includes('nom')&&!kl.includes('demand'))){
       ex(v,k,'LP').forEach(i=>{
         // Merge LSR by truckId
         if(!i.lsr && i.truckId && lsrMap[i.truckId]) i.lsr = lsrMap[i.truckId];
