@@ -159,10 +159,24 @@ function go(){
   const iB=iD.map(d=>({date:d,items:iI.filter(i=>sd(i.date,d)),sh:false}));
   if(iB.every(b=>!b.items.length)){for(let o=3;o<=21;o++){const d=aD(td,o),fi=iI.filter(i=>sd(i.date,d));if(fi.length){iB[2]={date:d,items:fi,sh:true};break;}}}
 
-  // OUTBOUND: show every day from today through the last day with activity
-  let lastAct=2;
-  for(let o=0;o<=21;o++){if(oI.some(i=>sd(i.date,aD(td,o))))lastAct=Math.max(lastAct,o);}
-  const oB=[];for(let i=0;i<=lastAct;i++)oB.push({date:aD(td,i),items:oI.filter(it=>sd(it.date,aD(td,i))),sh:false});
+  // OUTBOUND: show today through first active future date (include weekend gaps)
+  // Cap at 5 columns for readability
+  const MAX_COLS=5;
+  // Find the first day with outbound activity (from today forward)
+  let firstActive=-1;
+  for(let o=0;o<=21;o++){if(oI.some(i=>sd(i.date,aD(td,o)))){firstActive=o;break;}}
+  // Show enough days to include that active date, min 3
+  const showDays=firstActive>=0?Math.min(Math.max(firstActive+1,3),MAX_COLS):3;
+  const oB=[];
+  for(let i=0;i<showDays;i++){
+    const d=aD(td,i);
+    oB.push({date:d,items:oI.filter(it=>sd(it.date,d)),sh:false});
+  }
+  // If the active date fell outside our cap, shift the last slot to it
+  if(firstActive>=showDays){
+    const d=aD(td,firstActive),fi=oI.filter(i=>sd(i.date,d));
+    if(fi.length)oB[oB.length-1]={date:d,items:fi,sh:true};
+  }
 
   rP('in',iB);rP('out',oB);rK('in',iB);rK('out',oB);
 }
