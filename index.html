@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIFA WC2026 — 3-Day Forecast Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  // Fallback CDNs if primary fails
+  if (!window.supabase) {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>');
+  }
+</script>
+<script>
+  if (!window.supabase) {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');
+  }
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=Space+Mono:wght@400;700&display=swap');
 
@@ -605,13 +616,22 @@ function toggleDebug() {
 // INIT SUPABASE
 // ════════════════════════════════════════════════
 async function init() {
+  const loadingText = document.querySelector('.loading-text');
   try {
-    const rawClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Detect supabase global
+    const sb = window.supabase;
+    if (!sb || !sb.createClient) {
+      loadingText.textContent = 'ERROR: Supabase library failed to load';
+      log('ERROR: window.supabase not found. Keys: ' + Object.keys(window).filter(k => k.toLowerCase().includes('supa')));
+      setTimeout(init, 5000);
+      return;
+    }
+
+    const rawClient = sb.createClient(SUPABASE_URL, SUPABASE_KEY);
     // READ-ONLY SAFEGUARD: wrap client to only allow .select()
     const originalFrom = rawClient.from.bind(rawClient);
     rawClient.from = function(table) {
       const query = originalFrom(table);
-      // Block any write operations
       query.insert = () => { throw new Error('BLOCKED: Dashboard is read-only'); };
       query.update = () => { throw new Error('BLOCKED: Dashboard is read-only'); };
       query.upsert = () => { throw new Error('BLOCKED: Dashboard is read-only'); };
@@ -620,13 +640,16 @@ async function init() {
     };
     supabase = rawClient;
     log('Supabase client initialized (READ-ONLY mode)');
+
+    loadingText.textContent = 'Fetching data...';
     await fetchAllData();
     document.getElementById('loadingScreen').classList.add('hide');
     startRefreshLoop();
     startClock();
   } catch (err) {
     log('INIT ERROR: ' + err.message);
-    document.querySelector('.loading-text').textContent = 'Connection error — retrying...';
+    loadingText.textContent = 'Error: ' + err.message + ' — retrying in 5s...';
+    loadingText.style.color = '#f87171';
     setTimeout(init, 5000);
   }
 }
