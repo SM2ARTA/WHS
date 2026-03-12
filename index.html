@@ -4,18 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIFA WC2026 — 3-Day Forecast Dashboard</title>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-  // Fallback CDNs if primary fails
-  if (!window.supabase) {
-    document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>');
-  }
-</script>
-<script>
-  if (!window.supabase) {
-    document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');
-  }
-</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=Space+Mono:wght@400;700&display=swap');
 
@@ -595,10 +583,17 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const REFRESH_INTERVAL = 30; // seconds
 const TABLE = 'shared_state';
 
-let supabase;
 let allData = {};
 let refreshCountdown = REFRESH_INTERVAL;
 let debugLog = '';
+
+// REST API URL for read-only SELECT
+const REST_URL = `${SUPABASE_URL}/rest/v1/${TABLE}?select=*`;
+const REST_HEADERS = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Accept': 'application/json'
+};
 
 function log(msg) {
   const ts = new Date().toLocaleTimeString();
@@ -618,30 +613,8 @@ function toggleDebug() {
 async function init() {
   const loadingText = document.querySelector('.loading-text');
   try {
-    // Detect supabase global
-    const sb = window.supabase;
-    if (!sb || !sb.createClient) {
-      loadingText.textContent = 'ERROR: Supabase library failed to load';
-      log('ERROR: window.supabase not found. Keys: ' + Object.keys(window).filter(k => k.toLowerCase().includes('supa')));
-      setTimeout(init, 5000);
-      return;
-    }
-
-    const rawClient = sb.createClient(SUPABASE_URL, SUPABASE_KEY);
-    // READ-ONLY SAFEGUARD: wrap client to only allow .select()
-    const originalFrom = rawClient.from.bind(rawClient);
-    rawClient.from = function(table) {
-      const query = originalFrom(table);
-      query.insert = () => { throw new Error('BLOCKED: Dashboard is read-only'); };
-      query.update = () => { throw new Error('BLOCKED: Dashboard is read-only'); };
-      query.upsert = () => { throw new Error('BLOCKED: Dashboard is read-only'); };
-      query.delete = () => { throw new Error('BLOCKED: Dashboard is read-only'); };
-      return query;
-    };
-    supabase = rawClient;
-    log('Supabase client initialized (READ-ONLY mode)');
-
-    loadingText.textContent = 'Fetching data...';
+    loadingText.textContent = 'Fetching data from Supabase...';
+    log('Connecting via REST API: ' + REST_URL);
     await fetchAllData();
     document.getElementById('loadingScreen').classList.add('hide');
     startRefreshLoop();
@@ -655,15 +628,21 @@ async function init() {
 }
 
 // ════════════════════════════════════════════════
-// DATA FETCHING
+// DATA FETCHING — Direct REST API (read-only)
 // ════════════════════════════════════════════════
 async function fetchAllData() {
-  log('Fetching shared_state...');
-  const { data, error } = await supabase.from(TABLE).select('*');
-  if (error) {
-    log('FETCH ERROR: ' + error.message);
+  log('Fetching shared_state via REST...');
+  const response = await fetch(REST_URL, { headers: REST_HEADERS });
+  
+  if (!response.ok) {
+    const errText = await response.text();
+    log(`FETCH ERROR ${response.status}: ${errText}`);
+    document.querySelector('.loading-text').textContent = `API ${response.status}: ${errText.substring(0, 100)}`;
+    document.querySelector('.loading-text').style.color = '#f87171';
     return;
   }
+
+  const data = await response.json();
   log(`Fetched ${data.length} rows. Keys: ${data.map(r => r.key || r.id).join(', ')}`);
 
   allData = {};
