@@ -112,7 +112,7 @@
 <script>
 const SU='https://stwopndhnxcjyomkufii.supabase.co',SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d29wbmRobnhjanlvbWt1ZmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MDgyNjgsImV4cCI6MjA4ODQ4NDI2OH0.YNhp7z5kxnzpX15Vw8NVVWaZG1-Lj3Q9uaZDiKmBvf8';
 const RS=300,TBL='shared_state',RU=`${SU}/rest/v1/${TBL}?select=*`,HD={'apikey':SK,'Authorization':`Bearer ${SK}`,'Accept':'application/json'};
-const VM={'MEX CDMX / RGS':'Mexico City','MEX CDMX/RGS':'Mexico City','CDMX / RGS':'Mexico City','CDMX/RGS':'Mexico City'};
+const VM={'MEX CDMX / RGS':'Mexico City','MEX CDMX/RGS':'Mexico City','CDMX / RGS':'Mexico City','CDMX/RGS':'Mexico City','CAN TOR / RGS':'Toronto','CAN TOR/RGS':'Toronto','TOR / RGS':'Toronto','TOR/RGS':'Toronto','MEX GDL / RGS':'Guadalajara','MEX GDL/RGS':'Guadalajara','GDL / RGS':'Guadalajara','GDL/RGS':'Guadalajara'};
 
 let AD={},rc=RS,dl='';
 function lg(m){const t=new Date().toLocaleTimeString();dl+=`[${t}] ${m}\n`;const e=document.getElementById('dp');if(e)e.textContent=dl;console.log(m);}
@@ -254,7 +254,7 @@ function rP(type,bkts){
 function mC(g,pt){
   const c=document.createElement('div');c.className='cd';c.onclick=()=>oM(g);
   const bc=bC(g.type),sk=Object.values(g.skus).sort((a,b)=>b.pieces-a.pieces),t3=sk.slice(0,3);
-  const m=[];if(g.pallets)m.push(`<span>PLT <span class="n">${R(g.pallets)}</span></span>`);if(g.pieces)m.push(`<span>PCS <span class="n">${Ri(g.pieces)}</span></span>`);if(g.truckId)m.push(`<span>🚚 <span class="n">${esc(g.truckId)}</span></span>`);
+  const m=[];if(g.lsr)m.push(`<span>LSR <span class="n">${esc(g.lsr)}</span></span>`);if(g.pallets)m.push(`<span>PLT <span class="n">${R(g.pallets)}</span></span>`);if(g.pieces)m.push(`<span>PCS <span class="n">${Ri(g.pieces)}</span></span>`);if(g.truckId)m.push(`<span>🚚 <span class="n">${esc(g.truckId)}</span></span>`);
   let sh=t3.map(s=>`<div class="csl"><span class="csn">${esc(s.name)}</span><span class="csq">${Ri(s.pieces)} pcs</span></div>`).join('');
   if(sk.length>3)sh+=`<div class="csm">+${sk.length-3} more</div>`;
   c.innerHTML=`<div class="ct"><div class="cv">${esc(g.label)}</div><span class="cb ${bc}">${esc(g.type)}</span></div>${m.length?`<div class="cm">${m.join('')}</div>`:''}${g.venue?`<div class="cve">→ ${esc(g.venue)}</div>`:''}${sh?`<div class="cs">${sh}</div>`:''}`;
@@ -275,7 +275,7 @@ function rK(type,bkts){
 function oM(g){
   document.getElementById('mt').textContent=g.label;
   const b=document.getElementById('mb'),sk=Object.values(g.skus).sort((a,b2)=>b2.pieces-a.pieces);
-  let h=`<div class="mkr"><div class="mk"><div class="n">${R(g.pallets)}</div><div class="l">Pallets</div></div><div class="mk"><div class="n">${Ri(g.pieces)}</div><div class="l">Pieces</div></div><div class="mk"><div class="n">${sk.length}</div><div class="l">SKUs</div></div>${g.venue?`<div class="mk"><div class="n" style="font-size:clamp(11px,.8vw,16px)">${esc(g.venue)}</div><div class="l">Destination</div></div>`:''}</div>`;
+  let h=`<div class="mkr">${g.lsr?`<div class="mk"><div class="n" style="font-size:13px">${esc(g.lsr)}</div><div class="l">LSR</div></div>`:''}<div class="mk"><div class="n">${R(g.pallets)}</div><div class="l">Pallets</div></div><div class="mk"><div class="n">${Ri(g.pieces)}</div><div class="l">Pieces</div></div><div class="mk"><div class="n">${sk.length}</div><div class="l">SKUs</div></div>${g.venue?`<div class="mk"><div class="n" style="font-size:13px">${esc(g.venue)}</div><div class="l">Destination</div></div>`:''}</div>`;
   if(sk.length){h+=`<table class="mt"><thead><tr><th>Material / SKU</th><th style="text-align:right">Pallets</th><th style="text-align:right">Pieces</th><th style="text-align:right">Lines</th></tr></thead><tbody>`;
   sk.forEach(s=>{h+=`<tr><td class="tn">${esc(s.name)}</td><td class="tq">${R(s.pallets)}</td><td class="tq">${Ri(s.pieces)}</td><td class="tq">${s.count}</td></tr>`;});
   h+=`<tr style="border-top:2px solid var(--bda)"><td class="tn" style="font-weight:700">TOTAL</td><td class="tq" style="font-weight:700">${R(g.pallets)}</td><td class="tq" style="font-weight:700">${Ri(g.pieces)}</td><td class="tq" style="font-weight:700">${g.items.length}</td></tr></tbody></table>`;}
