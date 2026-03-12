@@ -204,24 +204,38 @@ function go(){
   function findActive(items, count) {
     const slots = [];
     let offset = 0;
-    let skipped = []; // track skipped day names
+    let skippedCount = 0;
+    let skippedFirst = null, skippedLast = null;
     while (slots.length < count && offset <= 30) {
       const d = aD(td, offset);
       const dayItems = items.filter(i => sd(i.date, d));
       if (dayItems.length > 0) {
-        slots.push({ date: d, items: dayItems, sh: offset >= 3, skipped: skipped.length ? [...skipped] : null });
-        skipped = [];
+        // Build concise skipped summary
+        let skippedNote = null;
+        if (skippedCount > 0) {
+          if (skippedCount <= 3) {
+            // List them: "Today, Tomorrow, Saturday"
+            const names = [];
+            for (let s = offset - skippedCount; s < offset; s++) names.push(dL(aD(td, s)));
+            skippedNote = names.join(', ') + ' — no activity';
+          } else {
+            // Range: "Mar 12 – Mar 15 — no activity (4 days)"
+            skippedNote = `${fd(skippedFirst)} – ${fd(skippedLast)} — no activity`;
+          }
+        }
+        slots.push({ date: d, items: dayItems, sh: offset >= 3, skippedNote });
+        skippedCount = 0; skippedFirst = null; skippedLast = null;
       } else {
-        // Track this skipped day
-        skipped.push(dL(d) + ' ' + fd(d));
+        if (!skippedFirst) skippedFirst = aD(td, offset);
+        skippedLast = aD(td, offset);
+        skippedCount++;
       }
       offset++;
     }
-    // If we found fewer than count, pad with "nothing upcoming" slots
+    // Pad remaining slots with empty "no upcoming" cards
     while (slots.length < count) {
       const d = aD(td, offset);
-      slots.push({ date: d, items: [], sh: true, skipped: skipped.length ? [...skipped] : null });
-      skipped = [];
+      slots.push({ date: d, items: [], sh: true, skippedNote: skippedCount > 0 ? 'No activity in next 30 days' : null });
       offset++;
     }
     return slots;
@@ -293,8 +307,8 @@ function rP(type,bkts){
     const groups=isOut?gO(b.items):gI(b.items);
     // Build skipped days note
     let skippedHtml='';
-    if(b.skipped&&b.skipped.length){
-      skippedHtml=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-top:2px;font-style:italic;opacity:.65">${b.skipped.join(', ')} — no activity</div>`;
+    if(b.skippedNote){
+      skippedHtml=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-top:2px;font-style:italic;opacity:.65">${b.skippedNote}</div>`;
     }
     col.innerHTML=`<div class="dh"><div><div class="dn">${label}${b.sh?' ↗':''}</div><div class="dd">${fd(b.date)}</div>${skippedHtml}</div>${has?`<div class="db">${groups.length}</div>`:''}</div><div class="dcc"></div>`;
     con.appendChild(col);
