@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FIFA WC2026 — 3-Day Forecast Dashboard</title>
+<title>FWC26 Dallas Main Logistics Center — 3-Day Activity View</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=Space+Mono:wght@400;700&display=swap');
 
@@ -126,7 +126,7 @@
 <div class="loading-screen" id="loadingScreen"><div class="loading-spinner"></div><div class="loading-text">Connecting to Supabase...</div></div>
 
 <div class="topbar">
-  <div class="topbar-left"><div class="topbar-logo">WC2026 FORECAST</div><div class="topbar-title">Dallas Main Logistics Center — 3-Day Activity View</div></div>
+  <div class="topbar-left"><div class="topbar-logo">FWC26</div><div class="topbar-title">Dallas Main Logistics Center — 3-Day Activity View</div></div>
   <div class="topbar-right"><span><span class="status-dot"></span> LIVE</span><span id="refreshTimer">Next refresh: 30s</span><span id="clockDisplay"></span></div>
 </div>
 <div class="main">
@@ -213,6 +213,10 @@ function processAndRender() {
     if(kl.includes('v26')||kl.includes('vision')) { extract(val,key,'V26').forEach(it=>{(it.direction==='outbound'?outI:inI).push(it);}); }
   });
   log(`Parsed: ${inI.length} inbound, ${outI.length} outbound`);
+  // Debug: show first few items with their direction reasoning
+  [...inI.slice(0,3),...outI.slice(0,3)].forEach(it => {
+    log(`  → [${it.direction}] "${it.itemName}" container="${it.container}" lsr="${it.lsr}" venue="${it.venue}" keys=${Object.keys(it._raw).join(',')}`);
+  });
   const ib=bkt(inI,dates), ob=bkt(outI,dates);
   const fi=shift(ib,dates,inI), fo=shift(ob,dates,outI);
   renderPanel('inbound',fi); renderPanel('outbound',fo);
@@ -234,7 +238,10 @@ function extract(val,sk,src) {
 
 function pr(entry,sk,src,idx) {
   if(!entry||typeof entry!=='object') return null;
+  // Field finder: returns first matching field value
   const fv=(cs)=>{for(const c of cs)for(const k of Object.keys(entry))if(k.toLowerCase().includes(c.toLowerCase()))return entry[k];return null;};
+  // Field finder: returns key name too
+  const fvk=(cs)=>{for(const c of cs)for(const k of Object.keys(entry))if(k.toLowerCase().includes(c.toLowerCase()))return {key:k,val:entry[k]};return null;};
 
   const date=fv(['date','arrival','delivery','dispatch','ship','eta','scheduled'])||fv(['day','when']);
   const vendor=fv(['vendor','supplier','carrier','company','from','shipper']);
@@ -245,19 +252,50 @@ function pr(entry,sk,src,idx) {
   const truckId=fv(['truck','truckId','fp','fingerprint']);
   const type=fv(['type','category','kind','mode']);
   const direction=fv(['direction','flow','dir']);
-  const container=fv(['container','shipment','booking','bol','bl','po','order','delivery_name','deliveryName','consignment'])||fv(['group','batch','load']);
   const lsr=fv(['lsr','LSR','request','requisition','order_num','orderNum']);
+  
+  // Container: look for shipping container IDs AND local delivery names
+  const containerRaw=fv(['container','shipment','booking','bol','bl','consignment'])||fv(['group','batch','load']);
+  // Also look for local delivery name (like "Local-USD-2")  
+  const localName=fv(['local','localDelivery','local_name','localName','delivery_name','deliveryName','po','order']);
+  
+  // Detect if container looks like a shipping container (4 alpha + 7 digits, e.g. TEMU7391052)
+  const isShippingContainer = containerRaw && /^[A-Z]{3,4}[UJZ]?\d{6,7}$/i.test(String(containerRaw).trim());
+  
+  // Use local name for local deliveries, shipping container for freight
+  const container = isShippingContainer ? String(containerRaw) : (localName ? String(localName) : (containerRaw ? String(containerRaw) : null));
 
+  // ── DIRECTION DETECTION ──
+  // Priority: explicit direction > LSR presence > container pattern > venue-only heuristic
   let dir='inbound';
-  if(direction) dir=String(direction).toLowerCase().includes('out')?'outbound':'inbound';
-  else if(src==='LM') dir='outbound';
-  else if(type){const t=String(type).toLowerCase();if(t.includes('dispatch')||t.includes('outbound'))dir='outbound';}
+  if(direction) {
+    dir=String(direction).toLowerCase().includes('out')?'outbound':'inbound';
+  } else if(src==='LM') {
+    dir='outbound';
+  } else if(lsr) {
+    // Has LSR number → outbound dispatch
+    dir='outbound';
+  } else if(src==='LP') {
+    // LP items: shipping containers are inbound, venue-only items are outbound
+    if(isShippingContainer) {
+      dir='inbound';
+    } else if(venue && !containerRaw) {
+      // Has venue destination but no container → outbound dispatch
+      dir='outbound';
+    } else if(containerRaw) {
+      // Has some container/group name → inbound (local delivery or grouped arrival)
+      dir='inbound';
+    }
+  } else if(type) {
+    const t=String(type).toLowerCase();
+    if(t.includes('dispatch')||t.includes('outbound')) dir='outbound';
+  }
 
   let badge=src;
   if(type){const t=String(type).toLowerCase();if(t.includes('ffe')||t.includes('ff&e'))badge='FF&E';else if(t.includes('cort'))badge='CORT';else if(t.includes('freight'))badge='FREIGHT';else if(t.includes('truck')||t.includes('dispatch'))badge='TRUCK';else if(t.includes('manual'))badge='MANUAL';else badge=String(type).toUpperCase().substring(0,10);}
 
   const dn=itemName?String(itemName):(vendor?String(vendor):`${src} #${idx}`);
-  return {date:date?String(date):null,vendor:dn,itemName:dn,venue:venue?String(venue):null,pallets:pallets?Number(pallets):0,pieces:pieces?Number(pieces):0,truckId:truckId?String(truckId):null,type:badge,direction:dir,source:src,container:container?String(container):null,lsr:lsr?String(lsr):null,_raw:entry};
+  return {date:date?String(date):null,vendor:dn,itemName:dn,venue:venue?String(venue):null,pallets:pallets?Number(pallets):0,pieces:pieces?Number(pieces):0,truckId:truckId?String(truckId):null,type:badge,direction:dir,source:src,container:container,lsr:lsr?String(lsr):null,_raw:entry};
 }
 
 function bkt(items,dates){return dates.map((d,i)=>({date:d,idx:i,items:items.filter(it=>sd(it.date,d))}));}
@@ -266,7 +304,7 @@ function shift(bkts,dates,all){const r=[...bkts];for(let i=0;i<r.length;i++){if(
 // ── GROUPING ──
 function grpIn(items){const g={};items.forEach(it=>{const gk=it.container||it.venue||it.type||'Other';if(!g[gk])g[gk]={label:gk,type:it.type,venue:it.venue,pallets:0,pieces:0,skus:{},items:[]};const gr=g[gk];gr.pallets+=it.pallets||0;gr.pieces+=it.pieces||0;gr.items.push(it);const sk=it.itemName;if(!gr.skus[sk])gr.skus[sk]={name:sk,pallets:0,pieces:0,count:0};gr.skus[sk].pallets+=it.pallets||0;gr.skus[sk].pieces+=it.pieces||0;gr.skus[sk].count++;});return Object.values(g);}
 
-function grpOut(items){const g={};items.forEach(it=>{const gk=it.lsr||it.truckId||it.venue||it.type||'Other';if(!g[gk])g[gk]={label:gk,type:it.type,venue:it.venue,lsr:it.lsr,truckId:it.truckId,pallets:0,pieces:0,skus:{},items:[]};const gr=g[gk];gr.pallets+=it.pallets||0;gr.pieces+=it.pieces||0;gr.items.push(it);const sk=it.itemName;if(!gr.skus[sk])gr.skus[sk]={name:sk,pallets:0,pieces:0,count:0};gr.skus[sk].pallets+=it.pallets||0;gr.skus[sk].pieces+=it.pieces||0;gr.skus[sk].count++;});return Object.values(g);}
+function grpOut(items){const g={};items.forEach(it=>{const gk=it.lsr||it.venue||it.truckId||it.type||'Other';if(!g[gk])g[gk]={label:gk,type:it.type,venue:it.venue,lsr:it.lsr,truckId:it.truckId,pallets:0,pieces:0,skus:{},items:[]};const gr=g[gk];gr.pallets+=it.pallets||0;gr.pieces+=it.pieces||0;gr.items.push(it);if(!gr.venue&&it.venue)gr.venue=it.venue;const sk=it.itemName;if(!gr.skus[sk])gr.skus[sk]={name:sk,pallets:0,pieces:0,count:0};gr.skus[sk].pallets+=it.pallets||0;gr.skus[sk].pieces+=it.pieces||0;gr.skus[sk].count++;});return Object.values(g);}
 
 // ── RENDER ──
 function renderPanel(type,dayBkts){
