@@ -67,6 +67,10 @@
   .csq{font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm);font-weight:700}
   .csm{font-size:var(--fs-xs);color:var(--tm);font-style:italic;margin-top:2px}
 
+  .ks-bot{padding:var(--sp-sm) var(--sp-lg) var(--sp-sm);border-top:1px solid var(--bd);flex-shrink:0;background:rgba(255,255,255,0.01)}
+  .ks-bot .kc{background:rgba(255,255,255,0.02)}
+  .ks-bot .kl::before{content:'∑ ';opacity:.5}
+
   .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center}
   .mo.active{display:flex}
   .md{background:var(--sf);border:1px solid var(--bda);border-radius:14px;width:90%;max-width:700px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.6)}
@@ -98,14 +102,38 @@
 </style>
 </head>
 <body>
-<div class="ls" id="ls"><div class="lsp"></div><div class="lt">Connecting to Supabase...</div></div>
+<!-- PASSWORD GATE -->
+<div id="gate" style="position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+  <div style="font-family:'Space Mono',monospace;font-size:var(--fs-lg);color:var(--ip);font-weight:700">FWC26 Activity Forecast</div>
+  <div style="font-size:var(--fs-sm);color:var(--tm)">Enter password to continue</div>
+  <input id="gp" type="password" placeholder="Password" autofocus
+    style="font-family:'DM Sans',sans-serif;font-size:var(--fs-md);padding:10px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);outline:none;width:240px;text-align:center"
+    onkeydown="if(event.key==='Enter')chkPw()">
+  <button onclick="chkPw()"
+    style="font-family:'Space Mono',monospace;font-size:var(--fs-sm);padding:8px 24px;border-radius:6px;border:none;background:var(--ip);color:var(--bg);font-weight:700;cursor:pointer">Enter</button>
+  <div id="ge" style="font-size:var(--fs-xs);color:#f87171;display:none">Incorrect password</div>
+</div>
+
+<div class="ls" id="ls" style="display:none"><div class="lsp"></div><div class="lt">Connecting to Supabase...</div></div>
+<div id="app" style="display:none">
 <div class="topbar">
   <div class="topbar-left"><div class="topbar-logo">FWC26</div><div class="topbar-title">Dallas Main Logistics Center — Activity Forecast</div></div>
   <div class="topbar-right"><span><span class="dot"></span> LIVE</span><span id="rt">5:00</span><span id="ck"></span></div>
 </div>
 <div class="main">
-  <div class="panel panel-in"><div class="ph"><div class="pl">▼ Inbound<span class="pl-line"></span></div></div><div class="ks" id="ik"></div><div class="dc" id="id"></div></div>
-  <div class="panel panel-out"><div class="ph"><div class="pl">▲ Outbound<span class="pl-line"></span></div></div><div class="ks" id="ok"></div><div class="dc" id="od"></div></div>
+  <div class="panel panel-in">
+    <div class="ph"><div class="pl">▼ Inbound<span class="pl-line"></span></div></div>
+    <div class="ks" id="ik"></div>
+    <div class="dc" id="id"></div>
+    <div class="ks ks-bot" id="ikb"></div>
+  </div>
+  <div class="panel panel-out">
+    <div class="ph"><div class="pl">▲ Outbound<span class="pl-line"></span></div></div>
+    <div class="ks" id="ok"></div>
+    <div class="dc" id="od"></div>
+    <div class="ks ks-bot" id="okb"></div>
+  </div>
+</div>
 </div>
 <div class="mo" id="mo" onclick="clM(event)"><div class="md" onclick="event.stopPropagation()"><div class="mdh"><h2 id="mt">Details</h2><button class="mx" onclick="clM()">×</button></div><div class="mdb" id="mb"></div></div></div>
 <button class="dbt" onclick="document.getElementById('dp').classList.toggle('active')">DBG</button>
@@ -117,6 +145,22 @@ const RS=300,TBL='shared_state',RU=`${SU}/rest/v1/${TBL}?select=*`,HD={'apikey':
 const VM={'MEX CDMX / RGS':'Mexico City','MEX CDMX/RGS':'Mexico City','CDMX / RGS':'Mexico City','CDMX/RGS':'Mexico City','CAN TOR / RGS':'Toronto','CAN TOR/RGS':'Toronto','TOR / RGS':'Toronto','TOR/RGS':'Toronto','MEX GDL / RGS':'Guadalajara','MEX GDL/RGS':'Guadalajara','GDL / RGS':'Guadalajara','GDL/RGS':'Guadalajara'};
 
 let AD={},rc=RS,dl='';
+
+// ── PASSWORD GATE ──
+function chkPw(){
+  const inp=document.getElementById('gp').value;
+  if(inp==='viewme'){
+    sessionStorage.setItem('fwc26_auth','1');
+    document.getElementById('gate').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('ls').style.display='flex';
+    init();
+  } else {
+    document.getElementById('ge').style.display='block';
+    document.getElementById('gp').value='';
+    document.getElementById('gp').focus();
+  }
+}
 function lg(m){const t=new Date().toLocaleTimeString();dl+=`[${t}] ${m}\n`;const e=document.getElementById('dp');if(e)e.textContent=dl;console.log(m);}
 function R(n){const v=Math.round(n*10)/10;return v%1===0?v.toFixed(0):v.toFixed(1);}
 function Ri(n){return Math.round(n);}
@@ -261,6 +305,8 @@ function go(){
   const oB = findActive(oI, 3);
 
   rP('in',iB);rP('out',oB);rK('in',iB);rK('out',oB);
+  // Cumulative KPIs (ALL items, not just displayed days)
+  rKb('in',iI);rKb('out',oI);
 }
 
 function ex(v,sk,src){const it=[];if(!v)return it;if(Array.isArray(v)){v.forEach((e,i)=>{const r=pr(e,sk,src,i);if(r)it.push(r)});return it;}
@@ -367,6 +413,23 @@ function rK(type,bkts){
   el.innerHTML=`<div class="kc"><div class="kv">${gr.length}</div><div class="kl">${type==='in'?'Deliveries':'Dispatches'}</div></div><div class="kc"><div class="kv">${R(p)}</div><div class="kl">Pallets</div></div><div class="kc"><div class="kv">${Ri(pc)}</div><div class="kl">Pieces</div></div><div class="kc"><div class="kv">${sk}</div><div class="kl">SKUs</div></div><div class="kc"><div class="kv">${v}</div><div class="kl">Venues</div></div>`;
 }
 
+// Cumulative KPIs — ALL items across all future dates
+function rKb(type,allItems){
+  const el=document.getElementById(type==='in'?'ikb':'okb');
+  if(!el)return;
+  const gr=type==='in'?gI(allItems):gO(allItems);
+  const p=allItems.reduce((s,i)=>s+(i.pallets||0),0);
+  const pc=allItems.reduce((s,i)=>s+(i.pieces||0),0);
+  const v=new Set(allItems.map(i=>i.venue).filter(Boolean)).size;
+  const sk=new Set(allItems.map(i=>i.itemName).filter(Boolean)).size;
+  // Find date range
+  const dates=allItems.map(i=>i.date).filter(Boolean).sort();
+  const first=dates.length?fd(new Date(dates[0])):'—';
+  const last=dates.length?fd(new Date(dates[dates.length-1])):'—';
+  const rangeLabel=dates.length?`${first} – ${last}`:'No data';
+  el.innerHTML=`<div class="kc"><div class="kv">${gr.length}</div><div class="kl">${type==='in'?'Deliveries':'Dispatches'}</div></div><div class="kc"><div class="kv">${R(p)}</div><div class="kl">Pallets</div></div><div class="kc"><div class="kv">${Ri(pc)}</div><div class="kl">Pieces</div></div><div class="kc"><div class="kv">${sk}</div><div class="kl">SKUs</div></div><div class="kc"><div class="kv">${v}</div><div class="kl">Venues</div></div><div class="kc"><div class="kv" style="font-size:var(--fs-sm)">${rangeLabel}</div><div class="kl">Period</div></div>`;
+}
+
 function oM(g){
   document.getElementById('mt').textContent=g.label;
   const b=document.getElementById('mb'),sk=Object.values(g.skus).sort((a,b2)=>b2.pieces-a.pieces);
@@ -379,7 +442,14 @@ function oM(g){
 }
 function clM(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('mo').classList.remove('active');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')clM();});
-init();
+
+// Start only after password gate
+if(sessionStorage.getItem('fwc26_auth')==='1'){
+  document.getElementById('gate').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('ls').style.display='flex';
+  init();
+}
 </script>
 </body>
 </html>
