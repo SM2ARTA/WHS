@@ -187,7 +187,7 @@ async function init(){
 }
 
 async function fa(){
-  const res=await fetch(RU+'&_t='+Date.now(),{headers:HD,cache:'no-store'});if(!res.ok){lg(`ERR ${res.status}`);return;}
+  const res=await fetch(RU,{headers:{...HD,'Cache-Control':'no-cache','Pragma':'no-cache'},cache:'no-store'});if(!res.ok){lg(`ERR ${res.status}`);return;}
   const data=await res.json();AD={};
   data.forEach(r=>{const k=r.key||r.id;let v=r.value||r.data||r.state;if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){}}AD[k]=v;});
   lg(`${data.length} rows`);go();
