@@ -354,9 +354,9 @@ function pr(e,sk,src,idx){
 }
 
 function gI(items){const g={};items.forEach(i=>{const k=i.container||i.venue||i.type||'Other';if(!g[k])g[k]={label:k,type:i.type,venue:i.venue,pallets:0,pieces:0,skus:{},items:[]};const r=g[k];r.pallets+=i.pallets||0;r.pieces+=i.pieces||0;r.items.push(i);const s=i.itemName;if(!r.skus[s])r.skus[s]={name:s,pallets:0,pieces:0,count:0};r.skus[s].pallets+=i.pallets||0;r.skus[s].pieces+=i.pieces||0;r.skus[s].count++;});return Object.values(g);}
-function gO(items){const g={};items.forEach(i=>{const k=i.lsr||i.venue||i.truckId||i.type||'Other';if(!g[k])g[k]={label:k,type:i.type,venue:i.venue,lsr:i.lsr,truckId:i.truckId,pallets:0,pieces:0,skus:{},items:[],lsrs:new Set()};const r=g[k];r.pallets+=i.pallets||0;r.pieces+=i.pieces||0;r.items.push(i);if(!r.venue&&i.venue)r.venue=i.venue;if(i.lsr)r.lsrs.add(i.lsr);if(!r.lsr&&i.lsr)r.lsr=i.lsr;
+function gO(items){const g={};items.forEach(i=>{const k=i.lsr||i.venue||i.truckId||i.type||'Other';if(!g[k])g[k]={label:k,type:i.type,venue:i.venue,lsr:i.lsr,truckId:i.truckId,pallets:0,pieces:0,skus:{},items:[],lsrs:new Set()};const r=g[k];r.pallets+=i.pallets||0;r.pieces+=i.pieces||0;r.items.push(i);if(!r.venue&&i.venue)r.venue=i.venue;
     // Collect LSR from parsed field
-    if(i.lsr)r.lsrs.add(String(i.lsr));if(!r.lsr&&i.lsr)r.lsr=i.lsr;
+    if(i.lsr){r.lsrs.add(String(i.lsr));if(!r.lsr)r.lsr=i.lsr;}
     // Also scan raw entry for any field containing LSR pattern
     if(i._raw&&typeof i._raw==='object'){for(const rk of Object.keys(i._raw)){
       const rv=i._raw[rk];if(rv&&typeof rv==='string'&&/LSR/i.test(rv))r.lsrs.add(rv);
@@ -393,22 +393,23 @@ function rP(type,bkts){
 function mC(g,pt){
   const c=document.createElement('div');c.className='cd';c.onclick=()=>oM(g);
   const bc=bC(g.type),sk=Object.values(g.skus).sort((a,b)=>b.pieces-a.pieces),t3=sk.slice(0,3);
-  // Collect all LSR values from group - check parsed field AND raw data
+  // Use pre-collected LSR values from grouping
   const lsrSet=new Set();
   if(g.lsr)lsrSet.add(String(g.lsr));
   if(g.lsrs)g.lsrs.forEach(l=>lsrSet.add(String(l)));
-  // Scan raw entries for any field named "LSR" (exact match, case-insensitive)
-  g.items.forEach(it=>{if(it._raw){Object.keys(it._raw).forEach(k=>{if(k.toUpperCase()==='LSR'&&it._raw[k])lsrSet.add(String(it._raw[k]));});}});
   const lsrArr=[...lsrSet].filter(Boolean);
   const lsrDisplay=lsrArr.join(' · ');
+  // Don't show LSR badge if it duplicates the card title
+  const labelIsLsr = g.label && lsrArr.length===1 && g.label===lsrArr[0];
   const m=[];
   if(g.pallets)m.push(`<span>PLT <span class="n">${R(g.pallets)}</span></span>`);
   if(g.pieces)m.push(`<span>PCS <span class="n">${Ri(g.pieces)}</span></span>`);
   if(g.truckId)m.push(`<span>TRK <span class="n">${esc(g.truckId)}</span></span>`);
-  const lsrHtml=lsrDisplay?`<div style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);font-weight:700;color:var(--op);margin-bottom:2px;letter-spacing:.4px;display:inline-block;background:rgba(251,146,60,.06);padding:1px 4px;border-radius:3px;border:1px solid rgba(251,146,60,.12);text-shadow:0 0 8px rgba(251,146,60,.15)">LSR ${esc(lsrDisplay)}</div>`:'';
+  const lsrHtml=(!labelIsLsr && lsrDisplay)?`<div style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);font-weight:700;color:var(--op);margin-bottom:2px;letter-spacing:.4px;display:inline-block;background:rgba(251,146,60,.06);padding:1px 4px;border-radius:3px;border:1px solid rgba(251,146,60,.12);text-shadow:0 0 8px rgba(251,146,60,.15)">LSR ${esc(lsrDisplay)}</div>`:'';
   let sh=t3.map(s=>`<div class="csl"><span class="csn">${esc(s.name)}</span><span class="csq">${Ri(s.pieces)} pcs</span></div>`).join('');
   if(sk.length>3)sh+=`<div class="csm">+${sk.length-3} more</div>`;
-  c.innerHTML=`<div class="ct"><div class="cv">${esc(g.label)}</div><span class="cb ${bc}">${esc(g.type)}</span></div>${lsrHtml}${m.length?`<div class="cm">${m.join('')}</div>`:''}${g.venue?`<div class="cve"><span style="color:var(--tm);opacity:.6">→</span> ${esc(g.venue)}</div>`:''}${sh?`<div class="cs">${sh}</div>`:''}`;
+  const venueIsLabel = g.venue && g.label===g.venue;
+  c.innerHTML=`<div class="ct"><div class="cv">${esc(g.label)}</div><span class="cb ${bc}">${esc(g.type)}</span></div>${lsrHtml}${m.length?`<div class="cm">${m.join('')}</div>`:''}${(g.venue && !venueIsLabel)?`<div class="cve"><span style="color:var(--tm);opacity:.6">→</span> ${esc(g.venue)}</div>`:''}${sh?`<div class="cs">${sh}</div>`:''}`;
   return c;
 }
 
