@@ -326,7 +326,8 @@ function ex(v,sk,src){const it=[];if(!v)return it;if(Array.isArray(v)){v.forEach
 function pr(e,sk,src,idx){
   if(!e||typeof e!=='object')return null;
   const fv=cs=>{for(const c of cs)for(const k of Object.keys(e))if(k.toLowerCase().includes(c.toLowerCase()))return e[k];return null};
-  const date=fv(['date','arrival','delivery','dispatch','ship','eta','scheduled'])||fv(['day','when']);
+  // Explicit date priority: arrivalDate > date > fuzzy match (avoids _origArrDate / readyDate collision)
+  const date=e.arrivalDate||e.date||e.arrival||e.delivery||e.dispatch||fv(['date','arrival','delivery','dispatch','ship','eta','scheduled'])||fv(['day','when']);
   const vendor=fv(['vendor','supplier','carrier','company','from','shipper']);
   const iN=fv(['name','sku','item','material','product','nomenclature','nom']);
   const vR=fv(['venue','destination','site','location','cluster','to','dest']);
