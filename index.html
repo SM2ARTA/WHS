@@ -154,7 +154,7 @@
 <script>
 const SU='https://stwopndhnxcjyomkufii.supabase.co',SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d29wbmRobnhjanlvbWt1ZmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MDgyNjgsImV4cCI6MjA4ODQ4NDI2OH0.YNhp7z5kxnzpX15Vw8NVVWaZG1-Lj3Q9uaZDiKmBvf8';
 const RS=300,TBL='shared_state',RU=`${SU}/rest/v1/${TBL}?select=*`,HD={'apikey':SK,'Authorization':`Bearer ${SK}`,'Accept':'application/json'};
-const VM={'MEX CDMX / RGS':'Mexico City','MEX CDMX/RGS':'Mexico City','CDMX / RGS':'Mexico City','CDMX/RGS':'Mexico City','CAN TOR / RGS':'Toronto','CAN TOR/RGS':'Toronto','TOR / RGS':'Toronto','TOR/RGS':'Toronto','MEX GDL / RGS':'Guadalajara','MEX GDL/RGS':'Guadalajara','GDL / RGS':'Guadalajara','GDL/RGS':'Guadalajara'};
+const VM={'MEX CDMX / RGS':'Mexico City','MEX CDMX/RGS':'Mexico City','CDMX / RGS':'Mexico City','CDMX/RGS':'Mexico City','CAN TOR / RGS':'Toronto','CAN TOR/RGS':'Toronto','TOR / RGS':'Toronto','TOR/RGS':'Toronto','CAN VAN / RGS':'Vancouver','CAN VAN/RGS':'Vancouver','VAN / RGS':'Vancouver','VAN/RGS':'Vancouver','MEX GDL / RGS':'Guadalajara','MEX GDL/RGS':'Guadalajara','GDL / RGS':'Guadalajara','GDL/RGS':'Guadalajara','MEX MTY / RGS':'Monterrey','MEX MTY/RGS':'Monterrey','MTY / RGS':'Monterrey','MTY/RGS':'Monterrey'};
 
 let AD={},rc=RS,dl='';
 
@@ -314,7 +314,8 @@ function go(){
   }
 
   const iB = findActive(iI, 4);
-  const oB = findActive(oI, 4);
+  const oF = oI.filter(i => i.lsr);
+  const oB = findActive(oF, 4);
 
   rP('in',iB);rP('out',oB);rK('in',iB);rK('out',oB);
 }
