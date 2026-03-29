@@ -971,7 +971,8 @@ function renderSC(){
     if(s.ready)destH+=` <span style="color:var(--ip)">${s.ready}</span> rdy`;
     if(s.oor)destH+=` <span style="color:#fbbf24">${s.oor}</span> oor`;
     destH+=`</div>`;
-    destH+=`<div class="sc-dest-bar"><div class="sc-dest-bar-fill" style="width:${Math.round(s.trucks/maxTrk*100)}%"></div></div>`;
+    const dispPct=s.trucks?Math.round(s.dispatched/s.trucks*100):0;
+    destH+=`<div class="sc-dest-bar"><div class="sc-dest-bar-fill" style="width:${dispPct}%;background:${dispPct>=100?'var(--gn)':dispPct>0?'var(--ip)':'var(--tm)'}"></div></div>`;
     destH+=`</div>`;
   });
   destH+='</div>';
