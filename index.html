@@ -142,7 +142,7 @@
 
   /* Destination grid */
   .sc-dest-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--sp-xs)}
-  .sc-dest{background:linear-gradient(180deg,rgba(255,255,255,.015) 0%,rgba(255,255,255,.003) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-sm);position:relative}
+  .sc-dest{background:linear-gradient(180deg,rgba(255,255,255,.015) 0%,rgba(255,255,255,.003) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-xs) var(--sp-sm);position:relative}
   .sc-dest-name{font-weight:700;font-size:var(--fs-sm);margin-bottom:2px;letter-spacing:.2px}
   .sc-dest-val{font-family:'Space Mono',monospace;font-size:var(--fs-md);font-weight:700;color:var(--ip)}
   .sc-dest-sub{font-size:var(--fs-xs);color:var(--tm)}
@@ -662,42 +662,43 @@ function renderSC(){
     });
     for(const sk in _arrBySkuDate)_arrBySkuDate[sk].sort((a,b)=>(a.readyDate||'').localeCompare(b.readyDate||''));
   }
-  // Walk LP trucks: for each SKU on the truck, find when it's ready via FIFO
-  const _lateResults=[];// {dest, sku, truckId, date, readyDate, daysLate}
-  const _skuFifoPtr={};// sku → index into _arrBySkuDate[sku] (FIFO consumption)
-  // Sort trucks by date for FIFO waterfall
+  // Walk LP trucks: for each SKU, check if arrival readyDate > truck ship date
+  const _lateResults=[];
+  // Build stock pool for waterfall consumption
+  const _stockPool2={};
+  if(stock&&stock.qtys){for(const[sk,qt]of Object.entries(stock.qtys)){if(typeof qt==='number')_stockPool2[sk]=qt}}
+  // Deep-copy arrivals for FIFO consumption
+  const _arrFifo={};
+  for(const sk in _arrBySkuDate)_arrFifo[sk]=_arrBySkuDate[sk].map(a=>({...a}));
+  // Sort trucks by date for waterfall
   const _trucksSorted=[...lpList].filter(t=>!oorSet.has(t.id)).sort((a,b)=>a.date.localeCompare(b.date));
   for(const t of _trucksSorted){
-    if(_isSent(t))continue;// already dispatched, skip
+    if(_isSent(t))continue;
     const tDate=t.date;if(!tDate)continue;
-    // Get SKUs on this truck
     const skusOnTruck={};
     plan.forEach(r=>{if(String(r.truckId)===String(t.id))skusOnTruck[r.sku||'']=(skusOnTruck[r.sku||'']||0)+(r.qty||0)});
     for(const[sku,qtyNeeded]of Object.entries(skusOnTruck)){
       if(!sku)continue;
-      // Check stock — if in stock, it's ready now
-      const inStock=stock&&stock.qtys&&stock.qtys[sku]>0;
-      if(inStock)continue;
-      // FIFO: walk arrivals for this SKU, consume qty
-      const arrivals=_arrBySkuDate[sku];
-      if(!arrivals||!arrivals.length)continue;// no arrival data = can't check
-      if(!_skuFifoPtr[sku])_skuFifoPtr[sku]=0;
-      let remaining=qtyNeeded,lastReady=null;
-      const startPtr=_skuFifoPtr[sku];
-      for(let i=startPtr;i<arrivals.length&&remaining>0;i++){
-        const a=arrivals[i];
+      let remaining=qtyNeeded;
+      // Consume from stock first
+      if(_stockPool2[sku]>0){
+        const take=Math.min(remaining,_stockPool2[sku]);
+        remaining-=take;_stockPool2[sku]-=take;
+      }
+      if(remaining<=0)continue;// fully covered by stock
+      // FIFO: walk arrivals
+      const arrivals=_arrFifo[sku];
+      if(!arrivals||!arrivals.length)continue;
+      let lastReady=null;
+      for(let i=0;i<arrivals.length&&remaining>0;i++){
+        const a=arrivals[i];if(a.qty<=0)continue;
         const take=Math.min(remaining,a.qty);
-        remaining-=take;
-        a.qty-=take;
-        if(a.qty<=0)_skuFifoPtr[sku]=i+1;
+        remaining-=take;a.qty-=take;
         lastReady=a.readyDate;
       }
-      // Is it late? readyDate > truck ship date
       if(lastReady&&lastReady>tDate){
         const daysLate=Math.round((new Date(lastReady+'T12:00:00')-new Date(tDate+'T12:00:00'))/864e5);
-        if(daysLate>0){
-          _lateResults.push({dest:matchDestName(t.dest),destAbbr:matchDestAbbr(t.dest),sku,truckId:t.id,date:tDate,readyDate:lastReady,daysLate,qty:qtyNeeded});
-        }
+        if(daysLate>0)_lateResults.push({dest:matchDestName(t.dest),destAbbr:matchDestAbbr(t.dest),sku,truckId:t.id,date:tDate,readyDate:lastReady,daysLate,qty:qtyNeeded});
       }
     }
   }
@@ -819,13 +820,22 @@ function renderSC(){
     lmH+=`<div class="sc-prog" style="margin-bottom:var(--sp-xs)"><div class="sc-prog-fill" style="width:${lmPct}%;background:var(--op)"></div></div>`;
     lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lmPct}% dispatched · ${lmVenues} venues · ${Ri(lmItemsUom).toLocaleString()} items</div>`;
   }
-  // Kit totals from fm-lm-kits (direct from Supabase, no snapshot needed)
+  // Kit data from fm-lm-kits (direct Supabase) — build venue→kit count map
   const kitsData=AD['fm-lm-kits'];
   let fnKitTotal=0,osKitTotal=0;
+  const kitsByVenue={};// venue → {fn, os}
   if(kitsData&&Array.isArray(kitsData)){
     kitsData.forEach(k=>{
-      if((k.sku||'').startsWith('FNKIT'))fnKitTotal++;
-      else if((k.sku||'').startsWith('OSKIT'))osKitTotal++;
+      const isFn=(k.sku||'').startsWith('FNKIT');
+      const isOs=(k.sku||'').startsWith('OSKIT');
+      if(isFn)fnKitTotal++;
+      if(isOs)osKitTotal++;
+      const v=k.venue||'';
+      if(v){
+        if(!kitsByVenue[v])kitsByVenue[v]={fn:0,os:0};
+        if(isFn)kitsByVenue[v].fn++;
+        if(isOs)kitsByVenue[v].os++;
+      }
     });
   }
   if(fnKitTotal||osKitTotal){
@@ -834,20 +844,27 @@ function renderSC(){
     lmH+=`<span style="color:#fcd050;font-weight:700">📎 ${osKitTotal} STP kits</span>`;
     lmH+=`</div>`;
   }
-  // LM truck table with kit columns
+  // LM truck table — match kits to trucks by destination/venue name
   const lmNextTrucks=snap.lmNextTrucks||[];
   if(lmNextTrucks.length){
     lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:var(--sp-xs);font-weight:500">Next LM Trucks</div>`;
     lmH+=`<table class="sc-arr"><thead><tr><th>Truck</th><th>Destination</th><th>Date</th><th style="text-align:right">Plt</th><th style="text-align:center;color:#7db4fc" title="FF&E Kits">🔧</th><th style="text-align:center;color:#fcd050" title="STP Kits">📎</th></tr></thead><tbody>`;
     lmNextTrucks.forEach(t=>{
       const dateStr=t.dd?fd(new Date(t.dd+'T12:00:00')):'';
+      // Match kits: use snapshot fn/os if available, otherwise match by venue name
+      let fn=t.fn||0,os=t.os||0;
+      if(!fn&&!os){
+        // Try matching dest to kitsByVenue keys (dest may contain venue name)
+        const dest=t.dest||'';
+        for(const v in kitsByVenue){if(dest.includes(v)||v.includes(dest)){fn=kitsByVenue[v].fn;os=kitsByVenue[v].os;break}}
+      }
       lmH+=`<tr>`;
       lmH+=`<td style="color:var(--op);font-weight:700;font-family:'Space Mono',monospace">${esc(String(t.id))}</td>`;
       lmH+=`<td class="arr-name" style="max-width:100px">${esc(t.dest)}</td>`;
       lmH+=`<td style="font-family:'Space Mono',monospace;color:var(--tm)">${dateStr}</td>`;
       lmH+=`<td class="arr-val">${R(t.plt)}</td>`;
-      lmH+=`<td style="text-align:center">${t.fn?`<span style="font-family:'Space Mono',monospace;font-weight:700;color:#7db4fc">${t.fn}</span>`:`<span style="opacity:.2">—</span>`}</td>`;
-      lmH+=`<td style="text-align:center">${t.os?`<span style="font-family:'Space Mono',monospace;font-weight:700;color:#fcd050">${t.os}</span>`:`<span style="opacity:.2">—</span>`}</td>`;
+      lmH+=`<td style="text-align:center">${fn?`<span style="font-family:'Space Mono',monospace;font-weight:700;color:#7db4fc">${fn}</span>`:''}</td>`;
+      lmH+=`<td style="text-align:center">${os?`<span style="font-family:'Space Mono',monospace;font-weight:700;color:#fcd050">${os}</span>`:''}</td>`;
       lmH+=`</tr>`;
     });
     lmH+=`</tbody></table>`;
