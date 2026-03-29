@@ -119,46 +119,41 @@
   .page-timer{position:fixed;bottom:clamp(6px,.5vh,12px);left:50%;transform:translateX(-50%) translateY(-14px);font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm);opacity:.3;z-index:100}
 
   /* ── Page 2: Supply Chain Status ── */
-  .sc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr auto;gap:var(--sp-sm);padding:var(--sp-sm);flex:1;overflow:hidden}
+  .sc-grid{display:grid;grid-template-columns:1fr 1.2fr 1fr 1fr;grid-template-rows:1fr auto;gap:var(--sp-sm);padding:var(--sp-sm);flex:1;overflow:hidden}
   .sc-section{background:linear-gradient(180deg,rgba(255,255,255,.018) 0%,rgba(255,255,255,.005) 100%);border:1px solid var(--bd);border-radius:5px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-  .sc-section.sc-wide{grid-column:span 3}
-  .sc-sh{padding:var(--sp-xs) var(--sp-sm);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:linear-gradient(180deg,rgba(255,255,255,.012) 0%,transparent 100%)}
+  .sc-section.sc-wide{grid-column:span 4}
+  .sc-sh{padding:var(--sp-sm) var(--sp-md);border-bottom:1px solid var(--bd);display:flex;align-items:center;flex-shrink:0;background:linear-gradient(180deg,rgba(255,255,255,.012) 0%,transparent 100%)}
   .sc-sh .pl{margin:0}
-  .sc-sb{flex:1;overflow-y:auto;padding:var(--sp-xs) var(--sp-sm)}
+  .sc-sb{flex:1;overflow-y:auto;padding:var(--sp-sm) var(--sp-md)}
   .sc-sb::-webkit-scrollbar{width:2px}.sc-sb::-webkit-scrollbar-track{background:transparent}.sc-sb::-webkit-scrollbar-thumb{background:var(--bda);border-radius:1px}
 
   /* KPI row for page 2 */
-  .sc-kpis{display:flex;gap:var(--sp-xs);flex-shrink:0}
-  .sc-kpi{flex:1;background:linear-gradient(180deg,rgba(255,255,255,.018) 0%,rgba(255,255,255,.005) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-xs) var(--sp-sm);position:relative;overflow:hidden;min-width:0}
+  .sc-kpis{display:flex;gap:var(--sp-xs);flex-shrink:0;margin-bottom:var(--sp-sm)}
+  .sc-kpi{flex:1;background:linear-gradient(180deg,rgba(255,255,255,.018) 0%,rgba(255,255,255,.005) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-sm) var(--sp-md);position:relative;overflow:hidden;min-width:0}
   .sc-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
   .sc-kpi .kv{font-family:'Space Mono',monospace;font-size:var(--fs-kpi);font-weight:700;line-height:1}
-  .sc-kpi .kl{font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.8px;font-weight:500;margin-top:1px}
-  .sc-kpi .ks{font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--td);margin-top:2px}
+  .sc-kpi .kl{font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.8px;font-weight:500;margin-top:2px}
+  .sc-kpi .sc-sub{font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--td);margin-top:2px;display:block;padding:0}
 
   /* Progress bar */
-  .sc-prog{height:clamp(4px,.3vw,8px);background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;margin-top:var(--sp-sm);position:relative}
+  .sc-prog{height:clamp(4px,.3vw,8px);background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative}
   .sc-prog-fill{height:100%;border-radius:4px;transition:width .6s ease}
   .sc-prog-seg{height:100%;position:absolute;top:0;border-radius:4px;transition:width .6s ease}
 
   /* Destination grid */
-  .sc-dest-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--sp-xs)}
-  .sc-dest{background:linear-gradient(180deg,rgba(255,255,255,.015) 0%,rgba(255,255,255,.003) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-xs) var(--sp-sm);position:relative}
+  .sc-dest-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--sp-sm)}
+  .sc-dest{background:linear-gradient(180deg,rgba(255,255,255,.015) 0%,rgba(255,255,255,.003) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-sm);position:relative}
   .sc-dest-name{font-weight:700;font-size:var(--fs-sm);margin-bottom:2px;letter-spacing:.2px}
   .sc-dest-val{font-family:'Space Mono',monospace;font-size:var(--fs-md);font-weight:700;color:var(--ip)}
-  .sc-dest-sub{font-size:var(--fs-xs);color:var(--tm)}
   .sc-dest-bar{height:2px;background:rgba(255,255,255,.04);border-radius:2px;margin-top:var(--sp-xs)}
   .sc-dest-bar-fill{height:100%;border-radius:2px;background:var(--ip);transition:width .6s ease}
 
-  /* Arrivals table */
-  .sc-arr{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
-  .sc-arr th{text-align:left;padding:1px var(--sp-xs);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.5px;color:var(--tm);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap}
-  .sc-arr td{padding:1px var(--sp-xs);border-bottom:1px solid rgba(255,255,255,.03);color:var(--td);font-size:var(--fs-xs)}
-  .sc-arr .arr-name{color:var(--tx);font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Tables for page 2 */
+  .sc-arr{width:100%;border-collapse:collapse}
+  .sc-arr th{text-align:left;padding:3px var(--sp-sm);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.5px;color:var(--tm);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap}
+  .sc-arr td{padding:2px var(--sp-sm);border-bottom:1px solid rgba(255,255,255,.03);color:var(--td);font-size:var(--fs-xs)}
+  .sc-arr .arr-name{color:var(--tx);font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sc-arr .arr-val{font-family:'Space Mono',monospace;font-weight:700;text-align:right;white-space:nowrap}
-
-  /* Late items */
-  .sc-late{display:flex;gap:var(--sp-xs);flex-wrap:wrap}
-  .sc-late-chip{font-family:'Space Mono',monospace;font-size:var(--fs-xs);padding:2px var(--sp-sm);border-radius:3px;font-weight:700}
 
   /* Status badges for page 2 */
   .sb-gn{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.15)}
@@ -217,7 +212,7 @@
     <div class="sc-prog" id="sc-prog-overall" style="margin:var(--sp-xs) 0 0"></div>
   </div>
   <!-- 4-column grid -->
-  <div class="sc-grid" style="grid-template-columns:1fr 1.2fr 1fr 1fr;grid-template-rows:1fr auto">
+  <div class="sc-grid">
     <!-- Load Plan -->
     <div class="sc-section">
       <div class="sc-sh"><div class="pl" style="color:var(--ip)">▲ Load Plan<span class="pl-line"></span></div></div>
@@ -239,7 +234,7 @@
       <div class="sc-sb" id="sc-risk"></div>
     </div>
     <!-- Destinations (full width) -->
-    <div class="sc-section sc-wide" style="grid-column:span 4">
+    <div class="sc-section sc-wide">
       <div class="sc-sh"><div class="pl" style="color:var(--ip)">◈ Destinations<span class="pl-line"></span></div></div>
       <div class="sc-sb" id="sc-dest"></div>
     </div>
@@ -783,13 +778,13 @@ function renderSC(){
 
   // ── LP Section ──
   const lpEl=document.getElementById('sc-lp');
-  let lpH=`<div class="sc-kpis" style="margin-bottom:var(--sp-sm)">`;
+  let lpH=`<div class="sc-kpis" style="">`;
   lpH+=scKpiSm(lpTotal+' trucks',R(lpTotalPlt),'var(--ip)');
   lpH+=scKpiSm('dispatched ('+lpPct+'%)',lpDispatched,'var(--gn)');
   lpH+=scKpiSm('ready',lpReady,'#38bdf8');
   lpH+=scKpiSm('pending',lpPending,'var(--op)');
   lpH+=`</div>`;
-  lpH+=`<div class="sc-prog" style="margin-bottom:var(--sp-sm)"><div class="sc-prog-seg" style="width:${lpPct}%;background:var(--gn);z-index:2"></div><div class="sc-prog-seg" style="width:${lpPct+rdPct}%;background:var(--ip);z-index:1"></div></div>`;
+  lpH+=`<div class="sc-prog" style=""><div class="sc-prog-seg" style="width:${lpPct}%;background:var(--gn);z-index:2"></div><div class="sc-prog-seg" style="width:${lpPct+rdPct}%;background:var(--ip);z-index:1"></div></div>`;
   lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lpPct}% dispatched · ${Ri(lpTotalQty).toLocaleString()} total qty</div>`;
   // Dispatch queue
   if(nextToShipDisplay.length){
@@ -810,14 +805,14 @@ function renderSC(){
 
   // ── LM Section (matches digest Last Mile: pallets, dispatched, CORT, Staples + kit table) ──
   const lmEl=document.getElementById('sc-lm');
-  let lmH=`<div class="sc-kpis" style="margin-bottom:var(--sp-sm)">`;
+  let lmH=`<div class="sc-kpis" style="">`;
   lmH+=scKpiSm(lmTrucks+' trucks',lmPallets.toLocaleString(),'var(--op)');
   lmH+=scKpiSm('dispatched ('+lmPct+'%)',lmDisp,'var(--gn)');
   lmH+=scKpiSm('CORT',lmCort,'#f87171',lmCortPcs.toLocaleString()+' pcs');
   lmH+=scKpiSm('Staples',stpTrucks,'var(--op)',stpQty.toLocaleString()+' qty');
   lmH+=`</div>`;
   if(lmTrucks>0){
-    lmH+=`<div class="sc-prog" style="margin-bottom:var(--sp-xs)"><div class="sc-prog-fill" style="width:${lmPct}%;background:var(--op)"></div></div>`;
+    lmH+=`<div class="sc-prog" style=""><div class="sc-prog-fill" style="width:${lmPct}%;background:var(--op)"></div></div>`;
     lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lmPct}% dispatched · ${lmVenues} venues · ${Ri(lmItemsUom).toLocaleString()} items</div>`;
   }
   // Kit totals from fm-lm-kits (direct Supabase)
@@ -850,38 +845,38 @@ function renderSC(){
   const arrEl=document.getElementById('sc-arr');
   let arrH='';
   if(allInbounds.length){
-    arrH+=`<div class="sc-kpis" style="margin-bottom:var(--sp-sm)">`;
+    arrH+=`<div class="sc-kpis" style="">`;
     arrH+=scKpiSm('arrived',inArrived.length,'var(--gn)');
     arrH+=scKpiSm('upcoming',inUpcoming.length,'var(--op)');
     arrH+=scKpiSm('3-day window',inUpcoming3d.length,'var(--ip)');
     arrH+=`</div>`;
     const arrPct=allInbounds.length?Math.round(inArrived.length/allInbounds.length*100):0;
-    arrH+=`<div class="sc-prog" style="margin-bottom:var(--sp-sm)"><div class="sc-prog-fill" style="width:${arrPct}%;background:var(--gn)"></div></div>`;
-    // Arrivals queue (upcoming, sorted by date)
+    arrH+=`<div class="sc-prog" style=""><div class="sc-prog-fill" style="width:${arrPct}%;background:var(--gn)"></div></div>`;
+    // Arrivals queue (upcoming)
     if(inUpcoming.length){
-      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs);font-weight:500">Arrivals Queue</div>`;
-      inUpcoming.slice(0,8).forEach(c=>{
+      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Arrivals Queue</div>`;
+      arrH+=`<table class="sc-arr"><thead><tr><th>Source</th><th>Type</th><th>Ready</th><th style="text-align:right">SKUs</th></tr></thead><tbody>`;
+      inUpcoming.slice(0,10).forEach(c=>{
         const dateStr=c.readyDate&&c.readyDate!=='—'?fd(new Date(c.readyDate+'T12:00:00')):'—';
-        arrH+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:var(--fs-sm)">`;
-        arrH+=`<span style="color:var(--tx);font-weight:500;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name)}</span>`;
-        arrH+=`<span class="db ${c.isLocal?'sb-or':'sb-bl'}" style="font-size:var(--fs-xs)">${c.isLocal?'LOCAL':'CONT'}</span>`;
-        arrH+=`<span style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm)">${dateStr}</span>`;
-        arrH+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-weight:700">${c.skuCount} SKU</span>`;
-        arrH+=`</div>`;
+        arrH+=`<tr><td class="arr-name">${esc(c.name)}</td>`;
+        arrH+=`<td><span class="db ${c.isLocal?'sb-or':'sb-bl'}" style="font-size:var(--fs-xs)">${c.isLocal?'LOCAL':'CONT'}</span></td>`;
+        arrH+=`<td style="font-family:'Space Mono',monospace;color:var(--tm)">${dateStr}</td>`;
+        arrH+=`<td class="arr-val">${c.skuCount}</td></tr>`;
       });
-      if(inUpcoming.length>8)arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);font-style:italic;margin-top:var(--sp-xs)">+${inUpcoming.length-8} more</div>`;
+      arrH+=`</tbody></table>`;
+      if(inUpcoming.length>10)arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);font-style:italic;margin-top:var(--sp-xs)">+${inUpcoming.length-10} more</div>`;
     }
-    // Recently arrived (dimmed)
+    // Recently arrived
     if(inArrived.length){
-      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">Recently Arrived</div>`;
-      const recentArr=inArrived.slice(-6).reverse();
-      recentArr.forEach(c=>{
-        arrH+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:var(--fs-sm);opacity:.5">`;
-        arrH+=`<span style="color:var(--gn);font-weight:500;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name)}</span>`;
-        arrH+=`<span class="db sb-gn" style="font-size:var(--fs-xs)">ARRIVED</span>`;
-        arrH+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-weight:700">${c.skuCount} SKU</span>`;
-        arrH+=`</div>`;
+      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-top:var(--sp-sm)">Recently Arrived</div>`;
+      arrH+=`<table class="sc-arr"><tbody>`;
+      inArrived.slice(-6).reverse().forEach(c=>{
+        arrH+=`<tr style="opacity:.5"><td class="arr-name" style="color:var(--gn)">${esc(c.name)}</td>`;
+        arrH+=`<td><span class="db sb-gn" style="font-size:var(--fs-xs)">ARRIVED</span></td>`;
+        arrH+=`<td></td>`;
+        arrH+=`<td class="arr-val">${c.skuCount}</td></tr>`;
       });
+      arrH+=`</tbody></table>`;
     }
   } else {
     arrH+=`<div class="emp"><div>No arrival data</div></div>`;
@@ -894,7 +889,7 @@ function renderSC(){
   const riskEl=document.getElementById('sc-risk');
   let riskH='';
   if(lateItems>0){
-    riskH+=`<div class="sc-kpis" style="margin-bottom:var(--sp-xs)">`;
+    riskH+=`<div class="sc-kpis" style="">`;
     riskH+=scKpiSm('items',lateItems,'#f87171');
     riskH+=scKpiSm('SKUs',lateSkus,'#f87171');
     riskH+=scKpiSm('trucks',lateTrucks,'#f87171');
@@ -953,10 +948,10 @@ function renderSC(){
 }
 
 function scKpi(val,label,clr,sub){
-  return`<div class="sc-kpi"><div class="kv" style="color:${clr};text-shadow:0 0 24px ${clr}33">${val}</div><div class="kl">${label}</div>${sub?`<div class="ks">${sub}</div>`:''}</div>`;
+  return`<div class="sc-kpi"><div class="kv" style="color:${clr};text-shadow:0 0 24px ${clr}33">${val}</div><div class="kl">${label}</div>${sub?`<span class="sc-sub">${sub}</span>`:''}</div>`;
 }
 function scKpiSm(label,val,clr,sub){
-  return`<div class="sc-kpi"><div class="kv" style="font-size:var(--fs-lg);color:${clr};text-shadow:0 0 16px ${clr}33">${val}</div><div class="kl">${label}</div>${sub?`<div class="ks" style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--td)">${sub}</div>`:''}</div>`;
+  return`<div class="sc-kpi"><div class="kv" style="font-size:var(--fs-lg);color:${clr};text-shadow:0 0 16px ${clr}33">${val}</div><div class="kl">${label}</div>${sub?`<span class="sc-sub">${sub}</span>`:''}</div>`;
 }
 function _scTruckRow(tid,lsr,dest,date,plt,clr,dim){
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:var(--fs-sm)${dim?';opacity:.5':''}">`;
