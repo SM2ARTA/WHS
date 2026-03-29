@@ -788,18 +788,22 @@ function renderSC(){
   lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lpPct}% dispatched · ${Ri(lpTotalQty).toLocaleString()} total qty</div>`;
   // Dispatch queue
   if(nextToShipDisplay.length){
-    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs);font-weight:500">Dispatch Queue</div>`;
+    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Dispatch Queue</div>`;
+    lpH+=`<table class="sc-arr"><tbody>`;
     nextToShipDisplay.forEach(t=>{
       lpH+=_scTruckRow('LP-'+t.id,lsrNumbers[t.id]||'',matchDestName(t.dest),fd(new Date(t.date+'T12:00:00')),R(t.plt),'var(--ip)',false);
     });
+    lpH+=`</tbody></table>`;
   }
   // Recently sent
   const sentArr=lpList.filter(t=>_isSent(t)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
   if(sentArr.length){
-    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">Recently Sent</div>`;
+    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-top:var(--sp-sm)">Recently Sent</div>`;
+    lpH+=`<table class="sc-arr"><tbody>`;
     sentArr.forEach(t=>{
       lpH+=_scTruckRow('LP-'+t.id,lsrNumbers[t.id]||'',matchDestName(t.dest),'',R(t.plt),'var(--gn)',true);
     });
+    lpH+=`</tbody></table>`;
   }
   lpEl.innerHTML=lpH;
 
@@ -833,11 +837,13 @@ function renderSC(){
   // LM truck table (no per-truck kit columns — kit-truck assignment requires PLAN_CACHE)
   const lmNextTrucks=snap.lmNextTrucks||[];
   if(lmNextTrucks.length){
-    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:var(--sp-xs);font-weight:500">Next LM Trucks</div>`;
+    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Next LM Trucks</div>`;
+    lmH+=`<table class="sc-arr"><tbody>`;
     lmNextTrucks.forEach(t=>{
       const dateStr=t.dd?fd(new Date(t.dd+'T12:00:00')):'';
       lmH+=_scTruckRow(esc(String(t.id)),'',esc(t.dest),dateStr,R(t.plt),'var(--op)',false);
     });
+    lmH+=`</tbody></table>`;
   }
   lmEl.innerHTML=lmH;
 
@@ -954,13 +960,13 @@ function scKpiSm(label,val,clr,sub){
   return`<div class="sc-kpi"><div class="kv" style="font-size:var(--fs-lg);color:${clr};text-shadow:0 0 16px ${clr}33">${val}</div><div class="kl">${label}</div>${sub?`<span class="sc-sub">${sub}</span>`:''}</div>`;
 }
 function _scTruckRow(tid,lsr,dest,date,plt,clr,dim){
-  let h=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:var(--fs-sm)${dim?';opacity:.5':''}">`;
-  h+=`<span style="color:${clr};font-weight:500">${esc(tid)}</span>`;
-  if(lsr)h+=`<span style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:${clr};font-weight:700">${esc(lsr)}</span>`;
-  h+=`<span style="color:var(--tm)">${esc(dest)}</span>`;
-  if(date)h+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-size:var(--fs-xs)">${date}</span>`;
-  h+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-weight:700">${plt}p</span>`;
-  h+=`</div>`;return h;
+  let h=`<tr${dim?' style="opacity:.5"':''}>`;
+  h+=`<td style="color:${clr};font-weight:700;font-family:'Space Mono',monospace">${tid}</td>`;
+  h+=`<td style="font-family:'Space Mono',monospace;color:${clr};font-weight:700">${lsr?lsr:''}</td>`;
+  h+=`<td class="arr-name" style="max-width:120px">${dest}</td>`;
+  h+=`<td style="font-family:'Space Mono',monospace;color:var(--tm)">${date||''}</td>`;
+  h+=`<td class="arr-val">${plt}p</td>`;
+  h+=`</tr>`;return h;
 }
 
 function matchDestAbbr(dest){
