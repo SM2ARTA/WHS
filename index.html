@@ -109,6 +109,63 @@
   .dbt:hover{opacity:.8}
   .dbp{display:none;position:fixed;bottom:34px;right:8px;width:550px;max-height:50vh;background:var(--sf);border:1px solid var(--bda);border-radius:6px;z-index:900;overflow:auto;padding:12px;font-family:'Space Mono',monospace;font-size:10px;color:var(--td);white-space:pre-wrap;word-break:break-all}
   .dbp.active{display:block}
+
+  /* ── Page rotation ── */
+  .page{display:none;height:100%;width:100%}
+  .page.active{display:flex;flex-direction:column}
+  .page-dots{position:fixed;bottom:clamp(6px,.5vh,12px);left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+  .page-dot{width:clamp(5px,.35vw,8px);height:clamp(5px,.35vw,8px);border-radius:50%;background:var(--tm);opacity:.3;cursor:pointer;transition:all .3s}
+  .page-dot.active{opacity:1;background:var(--ip);box-shadow:0 0 8px rgba(56,189,248,.4)}
+  .page-timer{position:fixed;bottom:clamp(6px,.5vh,12px);left:50%;transform:translateX(-50%) translateY(-14px);font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm);opacity:.3;z-index:100}
+
+  /* ── Page 2: Supply Chain Status ── */
+  .sc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr auto;gap:var(--sp-sm);padding:var(--sp-sm);flex:1;overflow:hidden}
+  .sc-section{background:linear-gradient(180deg,rgba(255,255,255,.018) 0%,rgba(255,255,255,.005) 100%);border:1px solid var(--bd);border-radius:5px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .sc-section.sc-wide{grid-column:span 3}
+  .sc-sh{padding:var(--sp-xs) var(--sp-sm);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:linear-gradient(180deg,rgba(255,255,255,.012) 0%,transparent 100%)}
+  .sc-sh .pl{margin:0}
+  .sc-sb{flex:1;overflow-y:auto;padding:var(--sp-xs) var(--sp-sm)}
+  .sc-sb::-webkit-scrollbar{width:2px}.sc-sb::-webkit-scrollbar-track{background:transparent}.sc-sb::-webkit-scrollbar-thumb{background:var(--bda);border-radius:1px}
+
+  /* KPI row for page 2 */
+  .sc-kpis{display:flex;gap:var(--sp-xs);flex-shrink:0}
+  .sc-kpi{flex:1;background:linear-gradient(180deg,rgba(255,255,255,.018) 0%,rgba(255,255,255,.005) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-xs) var(--sp-sm);position:relative;overflow:hidden;min-width:0}
+  .sc-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
+  .sc-kpi .kv{font-family:'Space Mono',monospace;font-size:var(--fs-kpi);font-weight:700;line-height:1}
+  .sc-kpi .kl{font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.8px;font-weight:500;margin-top:1px}
+  .sc-kpi .ks{font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--td);margin-top:2px}
+
+  /* Progress bar */
+  .sc-prog{height:clamp(4px,.3vw,8px);background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;margin-top:var(--sp-sm);position:relative}
+  .sc-prog-fill{height:100%;border-radius:4px;transition:width .6s ease}
+  .sc-prog-seg{height:100%;position:absolute;top:0;border-radius:4px;transition:width .6s ease}
+
+  /* Destination grid */
+  .sc-dest-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--sp-xs)}
+  .sc-dest{background:linear-gradient(180deg,rgba(255,255,255,.015) 0%,rgba(255,255,255,.003) 100%);border:1px solid var(--bd);border-radius:4px;padding:var(--sp-sm);position:relative}
+  .sc-dest-name{font-weight:700;font-size:var(--fs-sm);margin-bottom:2px;letter-spacing:.2px}
+  .sc-dest-val{font-family:'Space Mono',monospace;font-size:var(--fs-md);font-weight:700;color:var(--ip)}
+  .sc-dest-sub{font-size:var(--fs-xs);color:var(--tm)}
+  .sc-dest-bar{height:2px;background:rgba(255,255,255,.04);border-radius:2px;margin-top:var(--sp-xs)}
+  .sc-dest-bar-fill{height:100%;border-radius:2px;background:var(--ip);transition:width .6s ease}
+
+  /* Arrivals table */
+  .sc-arr{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .sc-arr th{text-align:left;padding:1px var(--sp-xs);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.5px;color:var(--tm);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap}
+  .sc-arr td{padding:1px var(--sp-xs);border-bottom:1px solid rgba(255,255,255,.03);color:var(--td);font-size:var(--fs-xs)}
+  .sc-arr .arr-name{color:var(--tx);font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sc-arr .arr-val{font-family:'Space Mono',monospace;font-weight:700;text-align:right}
+
+  /* Late items */
+  .sc-late{display:flex;gap:var(--sp-xs);flex-wrap:wrap}
+  .sc-late-chip{font-family:'Space Mono',monospace;font-size:var(--fs-xs);padding:2px var(--sp-sm);border-radius:3px;font-weight:700}
+
+  /* Status badges for page 2 */
+  .sb-gn{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.15)}
+  .sb-rd{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.15)}
+  .sb-am{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.15)}
+  .sb-bl{background:rgba(56,189,248,.1);color:var(--ip);border:1px solid rgba(56,189,248,.15)}
+  .sb-or{background:rgba(251,146,60,.1);color:var(--op);border:1px solid rgba(251,146,60,.15)}
 </style>
 </head>
 <body>
@@ -131,9 +188,12 @@
 <div class="ls" id="ls" style="display:none"><div class="lsp"></div><div class="lt">Connecting to Supabase...</div></div>
 <div id="app" style="display:none">
 <div class="topbar">
-  <div class="topbar-left"><div class="topbar-logo">FWC26</div><div class="topbar-title">Dallas Main Logistics Center — Activity Forecast</div></div>
+  <div class="topbar-left"><div class="topbar-logo">FWC26</div><div class="topbar-title" id="topbar-title">Dallas Main Logistics Center — Activity Forecast</div></div>
   <div class="topbar-right"><span><span class="dot"></span> LIVE</span><span id="rt">5:00</span><span id="ck"></span></div>
 </div>
+
+<!-- PAGE 1: Activity Forecast -->
+<div class="page active" id="page1">
 <div class="main">
   <div class="panel panel-in">
     <div class="ph"><div class="pl">▼ Inbound<span class="pl-line"></span></div></div>
@@ -145,6 +205,52 @@
     <div class="ks" id="ok"></div>
     <div class="dc" id="od"></div>
   </div>
+</div>
+</div>
+
+<!-- PAGE 2: FF&E Supply Chain Status -->
+<div class="page" id="page2">
+<div class="main" style="flex-direction:column;overflow:hidden">
+  <!-- Top KPI strip -->
+  <div style="padding:var(--sp-sm) var(--sp-sm) 0;flex-shrink:0">
+    <div class="sc-kpis" id="sc-kpis"></div>
+    <div class="sc-prog" id="sc-prog-overall" style="margin:var(--sp-xs) 0 0"></div>
+  </div>
+  <!-- 4-column grid -->
+  <div class="sc-grid" style="grid-template-columns:1fr 1.2fr 1fr 1fr;grid-template-rows:1fr auto">
+    <!-- Load Plan -->
+    <div class="sc-section">
+      <div class="sc-sh"><div class="pl" style="color:var(--ip)">▲ Load Plan<span class="pl-line"></span></div></div>
+      <div class="sc-sb" id="sc-lp"></div>
+    </div>
+    <!-- Last Mile -->
+    <div class="sc-section">
+      <div class="sc-sh"><div class="pl" style="color:var(--op)">▼ Last Mile<span class="pl-line"></span></div></div>
+      <div class="sc-sb" id="sc-lm"></div>
+    </div>
+    <!-- Arrivals -->
+    <div class="sc-section">
+      <div class="sc-sh"><div class="pl" style="color:var(--gn)">◆ Arrivals<span class="pl-line"></span></div></div>
+      <div class="sc-sb" id="sc-arr"></div>
+    </div>
+    <!-- Risks -->
+    <div class="sc-section">
+      <div class="sc-sh"><div class="pl" style="color:#f87171">⚠ Risks<span class="pl-line"></span></div></div>
+      <div class="sc-sb" id="sc-risk"></div>
+    </div>
+    <!-- Destinations (full width) -->
+    <div class="sc-section sc-wide" style="grid-column:span 4">
+      <div class="sc-sh"><div class="pl" style="color:var(--ip)">◈ Destinations<span class="pl-line"></span></div></div>
+      <div class="sc-sb" id="sc-dest"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Page indicator dots -->
+<div class="page-dots">
+  <div class="page-dot active" onclick="goPage(0)"></div>
+  <div class="page-dot" onclick="goPage(1)"></div>
 </div>
 </div>
 <div class="mo" id="mo" onclick="clM(event)"><div class="md" onclick="event.stopPropagation()"><div class="mdh"><h2 id="mt">Details</h2><button class="mx" onclick="clM()">×</button></div><div class="mdb" id="mb"></div></div></div>
@@ -183,6 +289,7 @@ async function init(){
   try{lt.textContent='Fetching data...';await fa();document.getElementById('ls').classList.add('hide');
     setInterval(()=>{rc--;const m=Math.floor(rc/60),s=rc%60;document.getElementById('rt').textContent=`${m}:${String(s).padStart(2,'0')}`;if(rc<=0){rc=RS;fa();}},1000);
     const ck=()=>{document.getElementById('ck').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});};ck();setInterval(ck,1000);
+    resetPageTimer();
   }catch(e){lg('ERR:'+e.message);lt.textContent='Error: '+e.message;lt.style.color='#f87171';setTimeout(init,5000);}
 }
 
@@ -264,6 +371,7 @@ function go(){
   });
   
   lg(`${iI.length} in, ${oI.length} out`);
+  try{renderSC();}catch(e){lg('SC render err: '+e.message);}
   oI.slice(0,3).forEach(i=>{
     const rawKeys=Object.keys(i._raw||{});
     const lsrFields=rawKeys.filter(k=>k.toUpperCase().includes('LSR'));
@@ -440,6 +548,463 @@ function oM(g){
 }
 function clM(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('mo').classList.remove('active');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')clM();});
+
+// ── PAGE ROTATION ──
+const PAGE_TITLES=['Dallas Main Logistics Center — Activity Forecast','FF&E Supply Chain Status'];
+let curPage=0,pageTimer=null,PAGE_INT=600; // 10 minutes
+function goPage(n){
+  curPage=n;
+  document.querySelectorAll('.page').forEach((p,i)=>{p.classList.toggle('active',i===n)});
+  document.querySelectorAll('.page-dot').forEach((d,i)=>{d.classList.toggle('active',i===n)});
+  document.getElementById('topbar-title').textContent=PAGE_TITLES[n];
+  resetPageTimer();
+}
+function nextPage(){goPage((curPage+1)%2);}
+function resetPageTimer(){clearInterval(pageTimer);pageTimer=setInterval(nextPage,PAGE_INT*1000);}
+
+// ── SUPPLY CHAIN STATUS (Page 2) ──
+const DEST_NAMES={TOR:'Toronto',VAN:'Vancouver',CDMX:'Mexico City',GDL:'Guadalajara',MTY:'Monterrey',HOU:'Houston',KC:'Kansas City',NY:'New York'};
+const DEST_ORDER=['CDMX','GDL','MTY','TOR','VAN','HOU','KC','NY'];
+
+function renderSC(){
+  const plan=AD['lp-plan'],ts=AD['lp-truck-state'],arr=AD['lp-arrivals'],stock=AD['fm-stock'],rw=AD['fm-rw'],nom=AD['lp-nom'],demand=AD['lp-demand'];
+  if(!plan||!Array.isArray(plan)){lg('SC: no lp-plan');return;}
+  const today=fk(t0());
+  const _d3=new Date(t0());_d3.setDate(_d3.getDate()+3);const d3Short=fk(_d3);
+
+  // ── LP truck-state fields (matches LP_loadFromSupabase) ──
+  const dispatched=new Set(ts&&ts.dispatched?ts.dispatched:[]);
+  const oorSet=new Set(ts&&ts.oorTrucks?ts.oorTrucks:[]);
+  const lsrNumbers=ts&&ts.lsrNumbers?ts.lsrNumbers:{};
+
+  // ── Per-truck aggregation (matches digest lines 127-129) ──
+  const lpTrucks={};
+  for(const r of plan){
+    if(!lpTrucks[r.truckId])lpTrucks[r.truckId]={id:r.truckId,date:r.date||'',dest:r.destination||'',plt:0,qty:0};
+    lpTrucks[r.truckId].plt+=(r.pallets||0);
+    lpTrucks[r.truckId].qty+=(r.qty||0);
+  }
+  const lpList=Object.values(lpTrucks);
+  const lpMaxPlt=26;
+
+  // ── Total demand from materialPlan (matches digest lines 135-140) ──
+  const _isTruck=d=>{const u=(d||'').toUpperCase();return u.includes('MEX')||u.includes('CAN')||u.includes('RIC')};
+  const _allDemand=(demand&&Array.isArray(demand))? demand.filter(d=>_isTruck(d.destination)):[];
+  const lpTotalQty=_allDemand.reduce((s,d)=>s+(d.effQty||0),0);
+  const lpTotalPlt=Math.round(_allDemand.reduce((s,d)=>{
+    const n=nom&&nom[d.sku];const pq=n?.palletQty||0;const ps=n?.palletSpc||0;
+    return s+(pq>0?(d.effQty||0)/pq*ps:0);
+  },0));
+  const lpTotalTrucks=lpMaxPlt>0?Math.ceil(lpTotalPlt/lpMaxPlt):0;
+  const lpTotal=Math.max(lpList.length,lpTotalTrucks);
+
+  // ── LP status classification (EXACT digest logic lines 142-144) ──
+  // Dispatched = dispatched set AND has LSR AND date <= today
+  // Ready = dispatched set AND has LSR AND date > today (future-locked for shipment)
+  // Pending = remainder
+  const _isSent=t=>dispatched.has(t.id)&&lsrNumbers[t.id]&&t.date<=today;
+  const _isReady=t=>dispatched.has(t.id)&&lsrNumbers[t.id]&&t.date>today;
+  const lpDispatched=lpList.filter(t=>_isSent(t)).length;
+  const lpReady=lpList.filter(t=>_isReady(t)).length;
+  const lpPending=lpTotal-lpDispatched-lpReady;
+  const lpPct=lpTotal>0?Math.round(lpDispatched/lpTotal*100):0;
+  const rdPct=lpTotal>0?Math.round(lpReady/lpTotal*100):0;
+
+  // ── WHS snapshot from ML3K (pre-computed LM totals, late arrivals) ──
+  const snap=AD['whs-snapshot']||{};
+  const _lm=snap.lmTotals||{trucks:0,pallets:0,cort:0,cortPcs:0,items:0,dispatched:0};
+
+  // ── LM stats — prefer snapshot, fallback to fm-rw ──
+  let lmVenues=snap.venueCount||0;
+  let lmItemsUom=snap.lmTotalItems||0;
+  const lmTrucks=_lm.trucks;
+  const lmPallets=_lm.pallets;
+  const lmDisp=_lm.dispatched;
+  const lmCort=_lm.cort;
+  const lmCortPcs=_lm.cortPcs;
+  const stpTrucks=snap.stpTrucks||0;
+  const stpQty=snap.stpQty||0;
+  const lmPct=lmTrucks>0?Math.round(lmDisp/lmTrucks*100):0;
+
+  // Fallback to fm-rw if no snapshot
+  if(!lmItemsUom&&rw){
+    const venues=new Set();
+    const rows=Array.isArray(rw)?rw:(rw.rows||rw.data||[]);
+    if(Array.isArray(rows)){
+      rows.forEach(r=>{
+        const v=r.Venue||r.venue||r['Venue Name'];
+        if(v)venues.add(v);
+        lmItemsUom+=(r._effQty||r.Required||r.qty||0);
+      });
+    }
+    if(!lmVenues)lmVenues=venues.size;
+  }
+
+  // ── Stock stats ──
+  let stockSkus=0,stockTotalQty=0;
+  if(stock){
+    const skus=stock.skus;
+    if(Array.isArray(skus))stockSkus=skus.length;
+    else if(skus&&typeof skus==='object')stockSkus=Object.keys(skus).length;
+    if(stock.qtys&&typeof stock.qtys==='object'){
+      stockTotalQty=Object.values(stock.qtys).reduce((s,v)=>s+(typeof v==='number'?v:0),0);
+    }
+  }
+
+  // ── Late arrivals — compute directly from LP data ──
+  // For each LP truck: check if any SKU's arrival readyDate > truck ship date
+  const _arrBySkuDate={};// sku → [{readyDate, qty}] sorted by readyDate
+  if(arr&&Array.isArray(arr)){
+    arr.forEach(a=>{
+      const sk=a.sku||'';if(!sk)return;
+      if(!_arrBySkuDate[sk])_arrBySkuDate[sk]=[];
+      _arrBySkuDate[sk].push({readyDate:a.readyDate||a.arrivalDate||'',qty:a.qty||0});
+    });
+    for(const sk in _arrBySkuDate)_arrBySkuDate[sk].sort((a,b)=>(a.readyDate||'').localeCompare(b.readyDate||''));
+  }
+  // Walk LP trucks: for each SKU on the truck, find when it's ready via FIFO
+  const _lateResults=[];// {dest, sku, truckId, date, readyDate, daysLate}
+  const _skuFifoPtr={};// sku → index into _arrBySkuDate[sku] (FIFO consumption)
+  // Sort trucks by date for FIFO waterfall
+  const _trucksSorted=[...lpList].filter(t=>!oorSet.has(t.id)).sort((a,b)=>a.date.localeCompare(b.date));
+  for(const t of _trucksSorted){
+    if(_isSent(t))continue;// already dispatched, skip
+    const tDate=t.date;if(!tDate)continue;
+    // Get SKUs on this truck
+    const skusOnTruck={};
+    plan.forEach(r=>{if(String(r.truckId)===String(t.id))skusOnTruck[r.sku||'']=(skusOnTruck[r.sku||'']||0)+(r.qty||0)});
+    for(const[sku,qtyNeeded]of Object.entries(skusOnTruck)){
+      if(!sku)continue;
+      // Check stock — if in stock, it's ready now
+      const inStock=stock&&stock.qtys&&stock.qtys[sku]>0;
+      if(inStock)continue;
+      // FIFO: walk arrivals for this SKU, consume qty
+      const arrivals=_arrBySkuDate[sku];
+      if(!arrivals||!arrivals.length)continue;// no arrival data = can't check
+      if(!_skuFifoPtr[sku])_skuFifoPtr[sku]=0;
+      let remaining=qtyNeeded,lastReady=null;
+      const startPtr=_skuFifoPtr[sku];
+      for(let i=startPtr;i<arrivals.length&&remaining>0;i++){
+        const a=arrivals[i];
+        const take=Math.min(remaining,a.qty);
+        remaining-=take;
+        a.qty-=take;
+        if(a.qty<=0)_skuFifoPtr[sku]=i+1;
+        lastReady=a.readyDate;
+      }
+      // Is it late? readyDate > truck ship date
+      if(lastReady&&lastReady>tDate){
+        const daysLate=Math.round((new Date(lastReady+'T12:00:00')-new Date(tDate+'T12:00:00'))/864e5);
+        if(daysLate>0){
+          _lateResults.push({dest:matchDestName(t.dest),destAbbr:matchDestAbbr(t.dest),sku,truckId:t.id,date:tDate,readyDate:lastReady,daysLate,qty:qtyNeeded});
+        }
+      }
+    }
+  }
+  // Aggregate late by destination
+  const _lateByDest={};
+  for(const l of _lateResults){
+    const d=l.dest;
+    if(!_lateByDest[d])_lateByDest[d]={dest:d,skus:new Set(),trucks:new Set(),qty:0,maxDays:0,items:0};
+    _lateByDest[d].skus.add(l.sku);_lateByDest[d].trucks.add(l.truckId);
+    _lateByDest[d].qty+=l.qty;_lateByDest[d].items++;
+    if(l.daysLate>_lateByDest[d].maxDays)_lateByDest[d].maxDays=l.daysLate;
+  }
+  const lateByDest=Object.values(_lateByDest).map(d=>({dest:d.dest,skus:d.skus.size,trucks:d.trucks.size,qty:d.qty,maxDays:d.maxDays,items:d.items})).sort((a,b)=>b.maxDays-a.maxDays);
+  const lateItems=_lateResults.length;
+  const lateSkus=[...new Set(_lateResults.map(l=>l.sku))].length;
+  const lateTrucks=[...new Set(_lateResults.map(l=>l.truckId))].length;
+  const lateMaxDays=_lateResults.length>0?Math.max(..._lateResults.map(l=>l.daysLate)):0;
+
+  // ── Inbounds (matches digest lines 156-168) ──
+  const contMap={};
+  if(arr&&Array.isArray(arr)){
+    for(const a of arr){
+      const key=a.container||a._localName||('Ungrouped-'+(a.arrivalDate||'?'));
+      const isLocal=!!a._localName||!a.container;
+      if(!contMap[key])contMap[key]={name:a._localName||a.container||'Ungrouped',readyDate:a.readyDate||'—',skuCount:0,skus:{},qty:0,isLocal};
+      if(!contMap[key].skus[a.sku]){contMap[key].skus[a.sku]=1;contMap[key].skuCount++}
+      contMap[key].qty+=(a.qty||0);
+      if(a.readyDate&&a.readyDate<contMap[key].readyDate)contMap[key].readyDate=a.readyDate;
+    }
+  }
+  const allInbounds=Object.values(contMap).sort((a,b)=>(a.readyDate||'').localeCompare(b.readyDate||''));
+  const inArrived=allInbounds.filter(c=>c.readyDate<=today);
+  const inUpcoming=allInbounds.filter(c=>c.readyDate>today);
+  const inUpcoming3d=inUpcoming.filter(c=>c.readyDate<=d3Short);
+
+  // ── Outbounds — ready trucks (matches digest lines 172-176) ──
+  const pendingShips=lpList.filter(t=>_isReady(t)).sort((a,b)=>a.date.localeCompare(b.date));
+  const nextToShip=pendingShips.filter(t=>t.date<=d3Short);
+  const nextToShipDisplay=nextToShip.length>0?nextToShip:pendingShips.slice(0,6);
+
+  // ── Per-destination stats ──
+  const destStats={};
+  DEST_ORDER.forEach(d=>{destStats[d]={trucks:0,pallets:0,qty:0,dispatched:0,ready:0,oor:0};});
+  lpList.forEach(t=>{
+    const abbr=matchDestAbbr(t.dest);
+    if(!abbr||!destStats[abbr])return;
+    const s=destStats[abbr];
+    s.trucks++;s.pallets+=t.plt;s.qty+=t.qty;
+    if(_isSent(t))s.dispatched++;
+    else if(oorSet.has(t.id))s.oor++;
+    else if(_isReady(t))s.ready++;
+  });
+
+  // ── Kickoff countdown ──
+  const daysToKickoff=Math.round((new Date('2026-06-11T12:00:00')-new Date())/86400000);
+
+  // ═══════════════════════════════════
+  // ── RENDER ──
+  // ═══════════════════════════════════
+
+  // ── Top KPI strip (matches digest Overall: items, venues, trucks, dispatched) ──
+  const _allTrucks=lpTotal+lmTrucks+lmCort+stpTrucks;
+  document.getElementById('sc-kpis').innerHTML=
+    scKpi(daysToKickoff,'Days to Kickoff','#a78bfa','Jun 11')+
+    scKpi(Ri(lmItemsUom).toLocaleString(),'Items','#00897B')+
+    scKpi(lmVenues||'—','Venues','#a78bfa')+
+    scKpi(_allTrucks,'Trucks','var(--ip)')+
+    scKpi(lpDispatched,'LP Dispatched','var(--gn)',lpPct+'%')+
+    scKpi(lpReady,'LP Ready','#38bdf8')+
+    scKpi(lpPending,'LP Pending',lpPending>0?'var(--op)':'var(--gn)');
+
+  // Overall progress bar
+  document.getElementById('sc-prog-overall').innerHTML=
+    `<div class="sc-prog-seg" style="width:${lpPct}%;background:var(--gn);z-index:2"></div>`+
+    `<div class="sc-prog-seg" style="width:${lpPct+rdPct}%;background:var(--ip);z-index:1"></div>`;
+
+  // ── LP Section ──
+  const lpEl=document.getElementById('sc-lp');
+  let lpH=`<div class="sc-kpis" style="margin-bottom:var(--sp-sm)">`;
+  lpH+=scKpiSm(lpTotal+' trucks',R(lpTotalPlt),'var(--ip)');
+  lpH+=scKpiSm('dispatched ('+lpPct+'%)',lpDispatched,'var(--gn)');
+  lpH+=scKpiSm('ready',lpReady,'#38bdf8');
+  lpH+=scKpiSm('pending',lpPending,'var(--op)');
+  lpH+=`</div>`;
+  lpH+=`<div class="sc-prog" style="margin-bottom:var(--sp-sm)"><div class="sc-prog-seg" style="width:${lpPct}%;background:var(--gn);z-index:2"></div><div class="sc-prog-seg" style="width:${lpPct+rdPct}%;background:var(--ip);z-index:1"></div></div>`;
+  lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lpPct}% dispatched · ${Ri(lpTotalQty).toLocaleString()} total qty</div>`;
+  // Dispatch queue
+  if(nextToShipDisplay.length){
+    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs);font-weight:500">Dispatch Queue</div>`;
+    nextToShipDisplay.forEach(t=>{
+      lpH+=_scTruckRow('LP-'+t.id,lsrNumbers[t.id]||'',matchDestName(t.dest),fd(new Date(t.date+'T12:00:00')),R(t.plt),'var(--ip)',false);
+    });
+  }
+  // Recently sent
+  const sentArr=lpList.filter(t=>_isSent(t)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
+  if(sentArr.length){
+    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">Recently Sent</div>`;
+    sentArr.forEach(t=>{
+      lpH+=_scTruckRow('LP-'+t.id,lsrNumbers[t.id]||'',matchDestName(t.dest),'',R(t.plt),'var(--gn)',true);
+    });
+  }
+  lpEl.innerHTML=lpH;
+
+  // ── LM Section (matches digest Last Mile: pallets, dispatched, CORT, Staples + kit table) ──
+  const lmEl=document.getElementById('sc-lm');
+  let lmH=`<div class="sc-kpis" style="margin-bottom:var(--sp-sm)">`;
+  lmH+=scKpiSm(lmTrucks+' trucks',lmPallets.toLocaleString(),'var(--op)');
+  lmH+=scKpiSm('dispatched ('+lmPct+'%)',lmDisp,'var(--gn)');
+  lmH+=scKpiSm('CORT',lmCort,'#f87171',lmCortPcs.toLocaleString()+' pcs');
+  lmH+=scKpiSm('Staples',stpTrucks,'var(--op)',stpQty.toLocaleString()+' qty');
+  lmH+=`</div>`;
+  if(lmTrucks>0){
+    lmH+=`<div class="sc-prog" style="margin-bottom:var(--sp-xs)"><div class="sc-prog-fill" style="width:${lmPct}%;background:var(--op)"></div></div>`;
+    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lmPct}% dispatched · ${lmVenues} venues · ${Ri(lmItemsUom).toLocaleString()} items</div>`;
+  }
+  // LM truck table with kit columns
+  const lmNextTrucks=snap.lmNextTrucks||[];
+  if(lmNextTrucks.length){
+    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs);font-weight:500">Next LM Trucks</div>`;
+    lmH+=`<table class="sc-arr"><thead><tr><th>Truck</th><th>Destination</th><th>Date</th><th style="text-align:right">Plt</th><th style="text-align:center;color:#7db4fc">FF&E</th><th style="text-align:center;color:#fcd050">STP</th></tr></thead><tbody>`;
+    lmNextTrucks.forEach(t=>{
+      const dateStr=t.dd?fd(new Date(t.dd+'T12:00:00')):'';
+      lmH+=`<tr>`;
+      lmH+=`<td style="color:var(--op);font-weight:700;font-family:'Space Mono',monospace;font-size:var(--fs-xs)">${esc(String(t.id))}</td>`;
+      lmH+=`<td class="arr-name" style="max-width:120px">${esc(t.dest)}</td>`;
+      lmH+=`<td style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm)">${dateStr}</td>`;
+      lmH+=`<td class="arr-val">${R(t.plt)}</td>`;
+      lmH+=`<td style="text-align:center">${t.fn?`<span style="font-family:'Space Mono',monospace;font-weight:700;font-size:var(--fs-xs);color:#7db4fc">${t.fn}</span>`:`<span style="color:var(--tm);opacity:.3">—</span>`}</td>`;
+      lmH+=`<td style="text-align:center">${t.os?`<span style="font-family:'Space Mono',monospace;font-weight:700;font-size:var(--fs-xs);color:#fcd050">${t.os}</span>`:`<span style="color:var(--tm);opacity:.3">—</span>`}</td>`;
+      lmH+=`</tr>`;
+    });
+    lmH+=`</tbody></table>`;
+    // Kit totals
+    const fnTotal=lmNextTrucks.reduce((s,t)=>s+(t.fn||0),0);
+    const osTotal=lmNextTrucks.reduce((s,t)=>s+(t.os||0),0);
+    if(fnTotal||osTotal){
+      lmH+=`<div style="display:flex;gap:var(--sp-md);font-size:var(--fs-xs);color:var(--tm);margin-top:var(--sp-xs)">`;
+      if(fnTotal)lmH+=`<span style="color:#7db4fc;font-weight:700">🔧 ${fnTotal} FF&E kits</span>`;
+      if(osTotal)lmH+=`<span style="color:#fcd050;font-weight:700">📎 ${osTotal} STP kits</span>`;
+      lmH+=`</div>`;
+    }
+  }
+  lmEl.innerHTML=lmH;
+
+  // ── Arrivals Section (queue + recently arrived, matching LP structure) ──
+  const arrEl=document.getElementById('sc-arr');
+  let arrH='';
+  if(allInbounds.length){
+    arrH+=`<div class="sc-kpis" style="margin-bottom:var(--sp-sm)">`;
+    arrH+=scKpiSm('arrived',inArrived.length,'var(--gn)');
+    arrH+=scKpiSm('upcoming',inUpcoming.length,'var(--op)');
+    arrH+=scKpiSm('3-day window',inUpcoming3d.length,'var(--ip)');
+    arrH+=`</div>`;
+    const arrPct=allInbounds.length?Math.round(inArrived.length/allInbounds.length*100):0;
+    arrH+=`<div class="sc-prog" style="margin-bottom:var(--sp-sm)"><div class="sc-prog-fill" style="width:${arrPct}%;background:var(--gn)"></div></div>`;
+    // Arrivals queue (upcoming, sorted by date)
+    if(inUpcoming.length){
+      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs);font-weight:500">Arrivals Queue</div>`;
+      inUpcoming.slice(0,8).forEach(c=>{
+        const dateStr=c.readyDate&&c.readyDate!=='—'?fd(new Date(c.readyDate+'T12:00:00')):'—';
+        arrH+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:var(--fs-sm)">`;
+        arrH+=`<span style="color:var(--tx);font-weight:500;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name)}</span>`;
+        arrH+=`<span class="db ${c.isLocal?'sb-or':'sb-bl'}" style="font-size:var(--fs-xs)">${c.isLocal?'LOCAL':'CONT'}</span>`;
+        arrH+=`<span style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm)">${dateStr}</span>`;
+        arrH+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-weight:700">${c.skuCount} SKU</span>`;
+        arrH+=`</div>`;
+      });
+      if(inUpcoming.length>8)arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);font-style:italic;margin-top:var(--sp-xs)">+${inUpcoming.length-8} more</div>`;
+    }
+    // Recently arrived (dimmed)
+    if(inArrived.length){
+      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">Recently Arrived</div>`;
+      const recentArr=inArrived.slice(-6).reverse();
+      recentArr.forEach(c=>{
+        arrH+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:var(--fs-sm);opacity:.5">`;
+        arrH+=`<span style="color:var(--gn);font-weight:500;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name)}</span>`;
+        arrH+=`<span class="db sb-gn" style="font-size:var(--fs-xs)">ARRIVED</span>`;
+        arrH+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-weight:700">${c.skuCount} SKU</span>`;
+        arrH+=`</div>`;
+      });
+    }
+  } else {
+    arrH+=`<div class="emp"><div>No arrival data</div></div>`;
+  }
+  arrEl.innerHTML=arrH;
+
+  // ── Risk Section — all late items sorted by max days ──
+  const riskEl=document.getElementById('sc-risk');
+  let riskH='';
+  if(lateItems>0){
+    // Summary KPIs
+    riskH+=`<div class="sc-kpis" style="margin-bottom:var(--sp-xs)">`;
+    riskH+=scKpiSm('items',lateItems,'#f87171');
+    riskH+=scKpiSm('SKUs',lateSkus,'#f87171');
+    riskH+=scKpiSm('trucks',lateTrucks,'#f87171');
+    riskH+=scKpiSm('max','+'+lateMaxDays+'d','#f87171');
+    riskH+=`</div>`;
+
+    // Aggregate by SKU — sorted by maxDays desc
+    const _lateBySku={};
+    for(const l of _lateResults){
+      if(!_lateBySku[l.sku])_lateBySku[l.sku]={sku:l.sku,trucks:new Set(),dests:new Set(),qty:0,maxDays:0};
+      _lateBySku[l.sku].trucks.add(l.truckId);_lateBySku[l.sku].dests.add(l.destAbbr||l.dest);
+      _lateBySku[l.sku].qty+=l.qty;
+      if(l.daysLate>_lateBySku[l.sku].maxDays)_lateBySku[l.sku].maxDays=l.daysLate;
+    }
+    const topSkus=Object.values(_lateBySku).map(s=>({sku:s.sku,trucks:s.trucks.size,dests:[...s.dests].join(', '),destCt:s.dests.size,qty:s.qty,maxDays:s.maxDays})).sort((a,b)=>b.maxDays-a.maxDays);
+
+    // Combined table: SKU + destinations + trucks + qty + max late
+    riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin-bottom:var(--sp-xs);font-weight:500">Late SKUs by Severity</div>`;
+    riskH+=`<table class="sc-arr"><thead><tr><th>SKU</th><th>Dests</th><th style="text-align:right">Trk</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th></tr></thead><tbody>`;
+    topSkus.forEach(s=>{
+      const nm=nom&&nom[s.sku]?nom[s.sku].name:'';
+      const severity=s.maxDays>=10?'#f87171':s.maxDays>=5?'#fb923c':'#fbbf24';
+      riskH+=`<tr>`;
+      riskH+=`<td class="arr-name" title="${esc(nm)}" style="max-width:100px">${esc(s.sku)}</td>`;
+      riskH+=`<td style="font-size:var(--fs-xs);color:var(--tm);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.dests)}">${esc(s.dests)}</td>`;
+      riskH+=`<td class="arr-val">${s.trucks}</td>`;
+      riskH+=`<td class="arr-val">${Ri(s.qty)}</td>`;
+      riskH+=`<td class="arr-val" style="color:${severity};font-weight:700">+${s.maxDays}d</td>`;
+      riskH+=`</tr>`;
+    });
+    riskH+=`</tbody></table>`;
+
+    // By destination summary below
+    if(lateByDest.length>1){
+      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">By Destination</div>`;
+      riskH+=`<table class="sc-arr"><thead><tr><th>Dest</th><th style="text-align:right">SKUs</th><th style="text-align:right">Trk</th><th style="text-align:right">Max</th></tr></thead><tbody>`;
+      lateByDest.forEach(d=>{
+        const severity=d.maxDays>=10?'#f87171':d.maxDays>=5?'#fb923c':'#fbbf24';
+        riskH+=`<tr><td class="arr-name">${esc(d.dest)}</td>`;
+        riskH+=`<td class="arr-val">${d.skus}</td>`;
+        riskH+=`<td class="arr-val">${d.trucks}</td>`;
+        riskH+=`<td class="arr-val" style="color:${severity};font-weight:700">+${d.maxDays}d</td></tr>`;
+      });
+      riskH+=`</tbody></table>`;
+    }
+  } else {
+    riskH+=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:var(--sp-sm);padding:var(--sp-lg)">`;
+    riskH+=`<div style="font-family:'Space Mono',monospace;font-size:var(--fs-lg);color:var(--gn);font-weight:700;text-shadow:0 0 16px rgba(52,211,153,.3)">✓</div>`;
+    riskH+=`<div style="font-size:var(--fs-sm);color:var(--gn);font-weight:500">No late arrival risks</div>`;
+    riskH+=`<div style="font-size:var(--fs-xs);color:var(--tm)">All LP items on track</div>`;
+    riskH+=`</div>`;
+  }
+  riskEl.innerHTML=riskH;
+
+  // ── Destinations Grid ──
+  const destEl=document.getElementById('sc-dest');
+  let destH='<div class="sc-dest-grid">';
+  const maxTrk=Math.max(...DEST_ORDER.map(d=>(destStats[d]||{}).trucks||0),1);
+  DEST_ORDER.forEach(abbr=>{
+    const s=destStats[abbr]||{trucks:0,pallets:0,qty:0,dispatched:0,ready:0,oor:0};
+    const pct=s.trucks?Math.round(s.dispatched/s.trucks*100):0;
+    const isInt=['CDMX','GDL','MTY','TOR','VAN'].includes(abbr);
+    const borderClr=isInt?'rgba(251,146,60,.18)':'rgba(56,189,248,.18)';
+    destH+=`<div class="sc-dest" style="border-bottom:2px solid ${borderClr}">`;
+    destH+=`<div style="display:flex;justify-content:space-between;align-items:center">`;
+    destH+=`<div class="sc-dest-name" style="color:${isInt?'var(--op)':'var(--ip)'}">${abbr}</div>`;
+    destH+=`<span class="db ${pct>=100?'sb-gn':pct>0?'sb-am':'sb-bl'}" style="font-size:var(--fs-xs)">${pct}%</span>`;
+    destH+=`</div>`;
+    destH+=`<div style="font-size:var(--fs-xs);color:var(--tm);line-height:1.1">${DEST_NAMES[abbr]||abbr}</div>`;
+    destH+=`<div class="sc-dest-val">${s.trucks}<span style="font-size:var(--fs-xs);color:var(--tm);font-weight:400;margin-left:2px">trk</span></div>`;
+    destH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-top:1px;line-height:1.4">`;
+    destH+=`${R(s.pallets)}p · ${Ri(s.qty).toLocaleString()}<br>`;
+    destH+=`<span style="color:var(--gn)">${s.dispatched}</span> sent`;
+    if(s.ready)destH+=` <span style="color:var(--ip)">${s.ready}</span> rdy`;
+    if(s.oor)destH+=` <span style="color:#fbbf24">${s.oor}</span> oor`;
+    destH+=`</div>`;
+    destH+=`<div class="sc-dest-bar"><div class="sc-dest-bar-fill" style="width:${Math.round(s.trucks/maxTrk*100)}%"></div></div>`;
+    destH+=`</div>`;
+  });
+  destH+='</div>';
+  destEl.innerHTML=destH;
+}
+
+function scKpi(val,label,clr,sub){
+  return`<div class="sc-kpi"><div class="kv" style="color:${clr};text-shadow:0 0 24px ${clr}33">${val}</div><div class="kl">${label}</div>${sub?`<div class="ks">${sub}</div>`:''}</div>`;
+}
+function scKpiSm(label,val,clr,sub){
+  return`<div class="sc-kpi"><div class="kv" style="font-size:var(--fs-lg);color:${clr};text-shadow:0 0 16px ${clr}33">${val}</div><div class="kl">${label}</div>${sub?`<div class="ks" style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--td)">${sub}</div>`:''}</div>`;
+}
+function _scTruckRow(tid,lsr,dest,date,plt,clr,dim){
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:var(--fs-sm)${dim?';opacity:.5':''}">`;
+  h+=`<span style="color:${clr};font-weight:500">${esc(tid)}</span>`;
+  if(lsr)h+=`<span style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:${clr};font-weight:700">${esc(lsr)}</span>`;
+  h+=`<span style="color:var(--tm)">${esc(dest)}</span>`;
+  if(date)h+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-size:var(--fs-xs)">${date}</span>`;
+  h+=`<span style="font-family:'Space Mono',monospace;color:var(--td);font-weight:700">${plt}p</span>`;
+  h+=`</div>`;return h;
+}
+
+function matchDestAbbr(dest){
+  if(!dest)return null;
+  const d=String(dest).toUpperCase();
+  for(const abbr of DEST_ORDER){
+    if(d.includes(abbr))return abbr;
+  }
+  // Full city name match
+  for(const [abbr,name] of Object.entries(DEST_NAMES)){
+    if(d.includes(name.toUpperCase()))return abbr;
+  }
+  return null;
+}
+function matchDestName(dest){
+  const abbr=matchDestAbbr(dest);
+  return abbr?DEST_NAMES[abbr]:String(dest||'');
+}
 
 // Start only after password gate
 if(sessionStorage.getItem('fwc26_auth')==='1'){
