@@ -10,6 +10,51 @@
     --fs-xs:clamp(6px,.35vw,9px);--fs-sm:clamp(7px,.45vw,11px);--fs-md:clamp(9px,.55vw,13px);--fs-lg:clamp(11px,.7vw,16px);--fs-kpi:clamp(16px,1.3vw,30px);
     --sp-xs:clamp(1px,.08vw,2px);--sp-sm:clamp(2px,.15vw,4px);--sp-md:clamp(3px,.22vw,6px);--sp-lg:clamp(5px,.35vw,9px);
     --glow-in:0 0 30px rgba(56,189,248,.06);--glow-out:0 0 30px rgba(251,146,60,.06)}
+  /* Light theme overrides */
+  body.light{--bg:#F4F5F7;--sf:#fff;--sf2:#F8F9FB;--sfh:#EEF0F4;--bd:#E2E4E9;--bda:#CBD0D8;--tx:#111318;--td:#60646C;--tm:#9CA0AA;--ip:#0369A1;--ip2:#0284C7;--ig:#0369A118;--ig2:#0369A108;--op:#C4550A;--op2:#EA580C;--og:#C4550A18;--og2:#C4550A08;--gn:#12804A;--kb:rgba(0,0,0,0.015);
+    --glow-in:0 0 20px rgba(3,105,161,.04);--glow-out:0 0 20px rgba(196,85,10,.04)}
+  body.light::before{background:none}
+  body.light::after{background:none}
+  body.light .topbar{background:linear-gradient(180deg,#fff 0%,#F8F9FB 100%);border-bottom-color:var(--bd)}
+  body.light .topbar::after{background:linear-gradient(90deg,rgba(3,105,161,.15) 0%,transparent 50%,rgba(196,85,10,.15) 100%)}
+  body.light .topbar-logo{color:var(--ip);text-shadow:none}
+  body.light .dot{background:var(--gn);box-shadow:none;animation:none;opacity:1}
+  body.light .panel-in::after{background:var(--bd)}
+  body.light .panel-in .kv{text-shadow:none}
+  body.light .panel-out .kv{text-shadow:none}
+  body.light .panel-in .kc{box-shadow:0 1px 3px rgba(0,0,0,.06);border-bottom-color:rgba(3,105,161,.15)}
+  body.light .panel-out .kc{box-shadow:0 1px 3px rgba(0,0,0,.06);border-bottom-color:rgba(196,85,10,.15)}
+  body.light .panel-in .db{background:rgba(3,105,161,.08);color:var(--ip);border-color:rgba(3,105,161,.15)}
+  body.light .panel-out .db{background:rgba(196,85,10,.08);color:var(--op);border-color:rgba(196,85,10,.15)}
+  body.light .dy{background:var(--sf);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  body.light .dy-today{border-color:rgba(3,105,161,.25);box-shadow:0 1px 6px rgba(3,105,161,.08)}
+  body.light .cd{background:var(--sf);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  body.light .cd:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  body.light .mo .md{background:var(--sf);border-color:var(--bd);box-shadow:0 16px 48px rgba(0,0,0,.15)}
+  body.light .b-ffe{background:rgba(59,130,246,.06);color:#2563EB;border-color:rgba(59,130,246,.15)}
+  body.light .b-cort{background:rgba(139,92,246,.06);color:#7C3AED;border-color:rgba(139,92,246,.15)}
+  body.light .b-frt{background:rgba(34,197,94,.06);color:#16A34A;border-color:rgba(34,197,94,.15)}
+  body.light .b-trk{background:rgba(234,179,8,.06);color:#CA8A04;border-color:rgba(234,179,8,.15)}
+  body.light .b-dsp{background:rgba(234,88,12,.06);color:#C2410C;border-color:rgba(234,88,12,.15)}
+  body.light .b-man{background:rgba(192,132,252,.06);color:#9333EA;border-color:rgba(192,132,252,.15)}
+  body.light .b-oth{background:rgba(148,163,184,.06);color:#64748B;border-color:rgba(148,163,184,.12)}
+  body.light .sc-section{background:var(--sf);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  body.light .sc-sh{background:linear-gradient(180deg,#F8F9FB 0%,var(--sf) 100%)}
+  body.light .sc-kpi{background:var(--sf);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  body.light .sc-kpi::before{background:none}
+  body.light .sc-kpi .kv{text-shadow:none}
+  body.light .sc-dest{background:var(--sf);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  body.light .sb-gn{background:rgba(18,128,74,.06);color:#12804A;border-color:rgba(18,128,74,.15)}
+  body.light .sb-rd{background:rgba(220,38,38,.06);color:#DC2626;border-color:rgba(220,38,38,.15)}
+  body.light .sb-am{background:rgba(202,138,4,.06);color:#A16207;border-color:rgba(202,138,4,.15)}
+  body.light .sb-bl{background:rgba(3,105,161,.06);color:var(--ip);border-color:rgba(3,105,161,.15)}
+  body.light .sb-or{background:rgba(196,85,10,.06);color:var(--op);border-color:rgba(196,85,10,.15)}
+  body.light .ls{background:var(--bg)}
+  body.light #gate{background:var(--bg)}
+  /* Theme toggle */
+  .theme-btn{background:none;border:1px solid var(--bd);color:var(--tm);font-family:'Space Mono',monospace;font-size:var(--fs-xs);padding:1px 6px;border-radius:4px;cursor:pointer;transition:all .15s;opacity:.6}
+  .theme-btn:hover{opacity:1;border-color:var(--bda)}
+
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);overflow:hidden;height:100vh;width:100vw}
   body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 25% 50%,rgba(56,189,248,.02) 0%,transparent 60%),radial-gradient(ellipse 80% 50% at 75% 50%,rgba(251,146,60,.02) 0%,transparent 60%);pointer-events:none;z-index:0}
@@ -184,7 +229,7 @@
 <div id="app" style="display:none">
 <div class="topbar">
   <div class="topbar-left"><div class="topbar-logo">FWC26</div><div class="topbar-title" id="topbar-title">Dallas Main Logistics Center — Activity Forecast</div></div>
-  <div class="topbar-right"><span><span class="dot"></span> LIVE</span><span id="rt">5:00</span><span id="ck"></span></div>
+  <div class="topbar-right"><span><span class="dot"></span> LIVE</span><span id="rt">5:00</span><span id="ck"></span><button class="theme-btn" id="themeBtn" onclick="toggleTheme()">LIGHT</button></div>
 </div>
 
 <!-- PAGE 1: Activity Forecast -->
@@ -543,6 +588,15 @@ function oM(g){
 }
 function clM(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('mo').classList.remove('active');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')clM();});
+
+// ── THEME TOGGLE ──
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent=isLight?'DARK':'LIGHT';
+  sessionStorage.setItem('fwc26_theme',isLight?'light':'dark');
+}
+// Restore theme on load
+if(sessionStorage.getItem('fwc26_theme')==='light'){document.body.classList.add('light');const b=document.getElementById('themeBtn');if(b)b.textContent='DARK'}
 
 // ── PAGE ROTATION ──
 const PAGE_TITLES=['Dallas Main Logistics Center — Activity Forecast','FF&E Supply Chain Status'];
