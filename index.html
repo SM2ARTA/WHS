@@ -1069,6 +1069,9 @@ function matchDestName(dest){
 }
 
 // Start only after password gate
+// Auto-login via URL param ?pw=viewme
+const _urlPw=new URLSearchParams(window.location.search).get('pw');
+if(_urlPw==='viewme'){sessionStorage.setItem('fwc26_auth','1');history.replaceState(null,'',window.location.pathname)}
 if(sessionStorage.getItem('fwc26_auth')==='1'){
   document.getElementById('gate').style.display='none';
   document.getElementById('app').style.display='block';
