@@ -834,14 +834,21 @@ function renderSC(){
     lmH+=`<span style="color:#fcd050;font-weight:700">📎 ${osKitTotal} STP kits</span>`;
     lmH+=`</div>`;
   }
-  // LM truck table (no per-truck kit columns — kit-truck assignment requires PLAN_CACHE)
+  // LM truck table with kit columns from snapshot
   const lmNextTrucks=snap.lmNextTrucks||[];
   if(lmNextTrucks.length){
     lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Next LM Trucks</div>`;
-    lmH+=`<table class="sc-arr"><tbody>`;
+    lmH+=`<table class="sc-arr"><thead><tr><th>Truck</th><th>Destination</th><th>Date</th><th style="text-align:right">Plt</th><th style="text-align:right;color:#7db4fc">🔧</th><th style="text-align:right;color:#fcd050">📎</th></tr></thead><tbody>`;
     lmNextTrucks.forEach(t=>{
       const dateStr=t.dd?fd(new Date(t.dd+'T12:00:00')):'';
-      lmH+=_scTruckRow(esc(String(t.id)),'',esc(t.dest),dateStr,R(t.plt),'var(--op)',false);
+      lmH+=`<tr>`;
+      lmH+=`<td style="color:var(--op);font-weight:700;font-family:'Space Mono',monospace">${esc(String(t.id))}</td>`;
+      lmH+=`<td class="arr-name" style="max-width:120px">${esc(t.dest)}</td>`;
+      lmH+=`<td style="font-family:'Space Mono',monospace;color:var(--tm)">${dateStr}</td>`;
+      lmH+=`<td class="arr-val">${R(t.plt)}</td>`;
+      lmH+=`<td class="arr-val" style="color:#7db4fc">${t.fn||''}</td>`;
+      lmH+=`<td class="arr-val" style="color:#fcd050">${t.os||''}</td>`;
+      lmH+=`</tr>`;
     });
     lmH+=`</tbody></table>`;
   }
