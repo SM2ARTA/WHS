@@ -710,11 +710,17 @@ function renderSC(){
     _lateByDest[d].qty+=l.qty;_lateByDest[d].items++;
     if(l.daysLate>_lateByDest[d].maxDays)_lateByDest[d].maxDays=l.daysLate;
   }
-  const lateByDest=Object.values(_lateByDest).map(d=>({dest:d.dest,skus:d.skus.size,trucks:d.trucks.size,qty:d.qty,maxDays:d.maxDays,items:d.items})).sort((a,b)=>b.maxDays-a.maxDays);
-  const lateItems=_lateResults.length;
-  const lateSkus=[...new Set(_lateResults.map(l=>l.sku))].length;
-  const lateTrucks=[...new Set(_lateResults.map(l=>l.truckId))].length;
-  const lateMaxDays=_lateResults.length>0?Math.max(..._lateResults.map(l=>l.daysLate)):0;
+  const _lpLateByDest=Object.values(_lateByDest).map(d=>({dest:d.dest,skus:d.skus.size,trucks:d.trucks.size,qty:d.qty,maxDays:d.maxDays,items:d.items})).sort((a,b)=>b.maxDays-a.maxDays);
+  const _lpLateItems=_lateResults.length;
+
+  // Use snapshot late data if available (more comprehensive — includes LM paths), fallback to LP FIFO
+  const _snapHasLate=snap.lateItems>0&&snap.lateByDest&&snap.lateByDest.length>0;
+  const lateByDest=_snapHasLate?snap.lateByDest:_lpLateByDest;
+  const lateItems=_snapHasLate?snap.lateItems:_lpLateItems;
+  const lateSkus=_snapHasLate?snap.lateSkus:[...new Set(_lateResults.map(l=>l.sku))].length;
+  const lateTrucks=_snapHasLate?snap.lateTrucks:[...new Set(_lateResults.map(l=>l.truckId))].length;
+  const lateMaxDays=_snapHasLate?snap.lateMaxDays:(_lateResults.length>0?Math.max(..._lateResults.map(l=>l.daysLate)):0);
+  const _lateSource=_snapHasLate?'snapshot':'live';
 
   // ── Inbounds (matches digest lines 156-168) ──
   const contMap={};
@@ -813,32 +819,38 @@ function renderSC(){
     lmH+=`<div class="sc-prog" style="margin-bottom:var(--sp-xs)"><div class="sc-prog-fill" style="width:${lmPct}%;background:var(--op)"></div></div>`;
     lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lmPct}% dispatched · ${lmVenues} venues · ${Ri(lmItemsUom).toLocaleString()} items</div>`;
   }
+  // Kit totals from fm-lm-kits (direct from Supabase, no snapshot needed)
+  const kitsData=AD['fm-lm-kits'];
+  let fnKitTotal=0,osKitTotal=0;
+  if(kitsData&&Array.isArray(kitsData)){
+    kitsData.forEach(k=>{
+      if((k.sku||'').startsWith('FNKIT'))fnKitTotal++;
+      else if((k.sku||'').startsWith('OSKIT'))osKitTotal++;
+    });
+  }
+  if(fnKitTotal||osKitTotal){
+    lmH+=`<div style="display:flex;gap:var(--sp-md);font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-xs)">`;
+    lmH+=`<span style="color:#7db4fc;font-weight:700">🔧 ${fnKitTotal} FF&E kits</span>`;
+    lmH+=`<span style="color:#fcd050;font-weight:700">📎 ${osKitTotal} STP kits</span>`;
+    lmH+=`</div>`;
+  }
   // LM truck table with kit columns
   const lmNextTrucks=snap.lmNextTrucks||[];
   if(lmNextTrucks.length){
-    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs);font-weight:500">Next LM Trucks</div>`;
-    lmH+=`<table class="sc-arr"><thead><tr><th>Truck</th><th>Destination</th><th>Date</th><th style="text-align:right">Plt</th><th style="text-align:center;color:#7db4fc">FF&E</th><th style="text-align:center;color:#fcd050">STP</th></tr></thead><tbody>`;
+    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:var(--sp-xs);font-weight:500">Next LM Trucks</div>`;
+    lmH+=`<table class="sc-arr"><thead><tr><th>Truck</th><th>Destination</th><th>Date</th><th style="text-align:right">Plt</th><th style="text-align:center;color:#7db4fc" title="FF&E Kits">🔧</th><th style="text-align:center;color:#fcd050" title="STP Kits">📎</th></tr></thead><tbody>`;
     lmNextTrucks.forEach(t=>{
       const dateStr=t.dd?fd(new Date(t.dd+'T12:00:00')):'';
       lmH+=`<tr>`;
-      lmH+=`<td style="color:var(--op);font-weight:700;font-family:'Space Mono',monospace;font-size:var(--fs-xs)">${esc(String(t.id))}</td>`;
-      lmH+=`<td class="arr-name" style="max-width:120px">${esc(t.dest)}</td>`;
-      lmH+=`<td style="font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm)">${dateStr}</td>`;
+      lmH+=`<td style="color:var(--op);font-weight:700;font-family:'Space Mono',monospace">${esc(String(t.id))}</td>`;
+      lmH+=`<td class="arr-name" style="max-width:100px">${esc(t.dest)}</td>`;
+      lmH+=`<td style="font-family:'Space Mono',monospace;color:var(--tm)">${dateStr}</td>`;
       lmH+=`<td class="arr-val">${R(t.plt)}</td>`;
-      lmH+=`<td style="text-align:center">${t.fn?`<span style="font-family:'Space Mono',monospace;font-weight:700;font-size:var(--fs-xs);color:#7db4fc">${t.fn}</span>`:`<span style="color:var(--tm);opacity:.3">—</span>`}</td>`;
-      lmH+=`<td style="text-align:center">${t.os?`<span style="font-family:'Space Mono',monospace;font-weight:700;font-size:var(--fs-xs);color:#fcd050">${t.os}</span>`:`<span style="color:var(--tm);opacity:.3">—</span>`}</td>`;
+      lmH+=`<td style="text-align:center">${t.fn?`<span style="font-family:'Space Mono',monospace;font-weight:700;color:#7db4fc">${t.fn}</span>`:`<span style="opacity:.2">—</span>`}</td>`;
+      lmH+=`<td style="text-align:center">${t.os?`<span style="font-family:'Space Mono',monospace;font-weight:700;color:#fcd050">${t.os}</span>`:`<span style="opacity:.2">—</span>`}</td>`;
       lmH+=`</tr>`;
     });
     lmH+=`</tbody></table>`;
-    // Kit totals
-    const fnTotal=lmNextTrucks.reduce((s,t)=>s+(t.fn||0),0);
-    const osTotal=lmNextTrucks.reduce((s,t)=>s+(t.os||0),0);
-    if(fnTotal||osTotal){
-      lmH+=`<div style="display:flex;gap:var(--sp-md);font-size:var(--fs-xs);color:var(--tm);margin-top:var(--sp-xs)">`;
-      if(fnTotal)lmH+=`<span style="color:#7db4fc;font-weight:700">🔧 ${fnTotal} FF&E kits</span>`;
-      if(osTotal)lmH+=`<span style="color:#fcd050;font-weight:700">📎 ${osTotal} STP kits</span>`;
-      lmH+=`</div>`;
-    }
   }
   lmEl.innerHTML=lmH;
 
@@ -896,42 +908,38 @@ function renderSC(){
     riskH+=scKpiSm('max','+'+lateMaxDays+'d','#f87171');
     riskH+=`</div>`;
 
-    // Aggregate by SKU — sorted by maxDays desc
-    const _lateBySku={};
-    for(const l of _lateResults){
-      if(!_lateBySku[l.sku])_lateBySku[l.sku]={sku:l.sku,trucks:new Set(),dests:new Set(),qty:0,maxDays:0};
-      _lateBySku[l.sku].trucks.add(l.truckId);_lateBySku[l.sku].dests.add(l.destAbbr||l.dest);
-      _lateBySku[l.sku].qty+=l.qty;
-      if(l.daysLate>_lateBySku[l.sku].maxDays)_lateBySku[l.sku].maxDays=l.daysLate;
-    }
-    const topSkus=Object.values(_lateBySku).map(s=>({sku:s.sku,trucks:s.trucks.size,dests:[...s.dests].join(', '),destCt:s.dests.size,qty:s.qty,maxDays:s.maxDays})).sort((a,b)=>b.maxDays-a.maxDays);
-
-    // Combined table: SKU + destinations + trucks + qty + max late
-    riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin-bottom:var(--sp-xs);font-weight:500">Late SKUs by Severity</div>`;
-    riskH+=`<table class="sc-arr"><thead><tr><th>SKU</th><th>Dests</th><th style="text-align:right">Trk</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th></tr></thead><tbody>`;
-    topSkus.forEach(s=>{
-      const nm=nom&&nom[s.sku]?nom[s.sku].name:'';
-      const severity=s.maxDays>=10?'#f87171':s.maxDays>=5?'#fb923c':'#fbbf24';
-      riskH+=`<tr>`;
-      riskH+=`<td class="arr-name" title="${esc(nm)}" style="max-width:100px">${esc(s.sku)}</td>`;
-      riskH+=`<td style="font-size:var(--fs-xs);color:var(--tm);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.dests)}">${esc(s.dests)}</td>`;
-      riskH+=`<td class="arr-val">${s.trucks}</td>`;
-      riskH+=`<td class="arr-val">${Ri(s.qty)}</td>`;
-      riskH+=`<td class="arr-val" style="color:${severity};font-weight:700">+${s.maxDays}d</td>`;
-      riskH+=`</tr>`;
+    // Late by destination — sorted by maxDays desc (works for both snapshot and LP FIFO)
+    riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin-bottom:var(--sp-xs);font-weight:500">By Destination · Max Days Late</div>`;
+    riskH+=`<table class="sc-arr"><thead><tr><th>Destination</th>${_lateSource==='snapshot'?'<th>Path</th>':''}<th style="text-align:right">SKUs</th><th style="text-align:right">Trk</th><th style="text-align:right">Qty</th><th style="text-align:right">Max</th></tr></thead><tbody>`;
+    lateByDest.forEach(d=>{
+      const severity=d.maxDays>=10?'#f87171':d.maxDays>=5?'#fb923c':'#fbbf24';
+      riskH+=`<tr><td class="arr-name">${esc(d.dest)}</td>`;
+      if(_lateSource==='snapshot')riskH+=`<td><span class="db ${d.path==='LP'?'sb-bl':'sb-or'}" style="font-size:var(--fs-xs)">${esc(d.path||'')}</span></td>`;
+      riskH+=`<td class="arr-val">${d.skus}</td>`;
+      riskH+=`<td class="arr-val">${d.trucks}</td>`;
+      riskH+=`<td class="arr-val">${Ri(d.qty).toLocaleString()}</td>`;
+      riskH+=`<td class="arr-val" style="color:${severity};font-weight:700">+${d.maxDays}d</td></tr>`;
     });
     riskH+=`</tbody></table>`;
 
-    // By destination summary below
-    if(lateByDest.length>1){
-      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">By Destination</div>`;
-      riskH+=`<table class="sc-arr"><thead><tr><th>Dest</th><th style="text-align:right">SKUs</th><th style="text-align:right">Trk</th><th style="text-align:right">Max</th></tr></thead><tbody>`;
-      lateByDest.forEach(d=>{
-        const severity=d.maxDays>=10?'#f87171':d.maxDays>=5?'#fb923c':'#fbbf24';
-        riskH+=`<tr><td class="arr-name">${esc(d.dest)}</td>`;
-        riskH+=`<td class="arr-val">${d.skus}</td>`;
-        riskH+=`<td class="arr-val">${d.trucks}</td>`;
-        riskH+=`<td class="arr-val" style="color:${severity};font-weight:700">+${d.maxDays}d</td></tr>`;
+    // Top late SKUs from LP FIFO (always available)
+    if(_lateResults.length){
+      const _lateBySku={};
+      for(const l of _lateResults){
+        if(!_lateBySku[l.sku])_lateBySku[l.sku]={sku:l.sku,dests:new Set(),qty:0,maxDays:0};
+        _lateBySku[l.sku].dests.add(l.destAbbr||l.dest);
+        _lateBySku[l.sku].qty+=l.qty;
+        if(l.daysLate>_lateBySku[l.sku].maxDays)_lateBySku[l.sku].maxDays=l.daysLate;
+      }
+      const topSkus=Object.values(_lateBySku).map(s=>({sku:s.sku,dests:[...s.dests].join(', '),destCt:s.dests.size,qty:s.qty,maxDays:s.maxDays})).sort((a,b)=>b.maxDays-a.maxDays);
+      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">Top Late SKUs (LP)</div>`;
+      riskH+=`<table class="sc-arr"><thead><tr><th>SKU</th><th>Dests</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th></tr></thead><tbody>`;
+      topSkus.slice(0,10).forEach(s=>{
+        const severity=s.maxDays>=10?'#f87171':s.maxDays>=5?'#fb923c':'#fbbf24';
+        riskH+=`<tr><td class="arr-name" style="max-width:90px">${esc(s.sku)}</td>`;
+        riskH+=`<td style="color:var(--tm);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.dests)}">${esc(s.dests)}</td>`;
+        riskH+=`<td class="arr-val">${Ri(s.qty)}</td>`;
+        riskH+=`<td class="arr-val" style="color:${severity};font-weight:700">+${s.maxDays}d</td></tr>`;
       });
       riskH+=`</tbody></table>`;
     }
