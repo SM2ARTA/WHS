@@ -851,13 +851,9 @@ function renderSC(){
     lmH+=`<table class="sc-arr"><thead><tr><th>Truck</th><th>Destination</th><th>Date</th><th style="text-align:right">Plt</th><th style="text-align:center;color:#7db4fc" title="FF&E Kits">🔧</th><th style="text-align:center;color:#fcd050" title="STP Kits">📎</th></tr></thead><tbody>`;
     lmNextTrucks.forEach(t=>{
       const dateStr=t.dd?fd(new Date(t.dd+'T12:00:00')):'';
-      // Match kits: use snapshot fn/os if available, otherwise match by venue name
+      // Match kits by exact venue name (dest IS the venue name from snapshot)
       let fn=t.fn||0,os=t.os||0;
-      if(!fn&&!os){
-        // Try matching dest to kitsByVenue keys (dest may contain venue name)
-        const dest=t.dest||'';
-        for(const v in kitsByVenue){if(dest.includes(v)||v.includes(dest)){fn=kitsByVenue[v].fn;os=kitsByVenue[v].os;break}}
-      }
+      if(!fn&&!os&&kitsByVenue[t.dest]){fn=kitsByVenue[t.dest].fn;os=kitsByVenue[t.dest].os}
       lmH+=`<tr>`;
       lmH+=`<td style="color:var(--op);font-weight:700;font-family:'Space Mono',monospace">${esc(String(t.id))}</td>`;
       lmH+=`<td class="arr-name" style="max-width:100px">${esc(t.dest)}</td>`;
@@ -939,17 +935,18 @@ function renderSC(){
     });
     riskH+=`</tbody></table>`;
 
-    // Top late SKUs from LP FIFO (always available)
-    if(_lateResults.length){
-      const _lateBySku={};
-      for(const l of _lateResults){
-        if(!_lateBySku[l.sku])_lateBySku[l.sku]={sku:l.sku,dests:new Set(),qty:0,maxDays:0};
-        _lateBySku[l.sku].dests.add(l.destAbbr||l.dest);
-        _lateBySku[l.sku].qty+=l.qty;
-        if(l.daysLate>_lateBySku[l.sku].maxDays)_lateBySku[l.sku].maxDays=l.daysLate;
-      }
-      const topSkus=Object.values(_lateBySku).map(s=>({sku:s.sku,dests:[...s.dests].join(', '),destCt:s.dests.size,qty:s.qty,maxDays:s.maxDays})).sort((a,b)=>b.maxDays-a.maxDays);
-      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">Top Late SKUs (LP)</div>`;
+    // Top late SKUs — combine LP FIFO results with snapshot summary
+    const _lateBySku={};
+    // From LP FIFO (live computation)
+    for(const l of _lateResults){
+      if(!_lateBySku[l.sku])_lateBySku[l.sku]={sku:l.sku,dests:new Set(),qty:0,maxDays:0};
+      _lateBySku[l.sku].dests.add(l.destAbbr||l.dest);
+      _lateBySku[l.sku].qty+=l.qty;
+      if(l.daysLate>_lateBySku[l.sku].maxDays)_lateBySku[l.sku].maxDays=l.daysLate;
+    }
+    const topSkus=Object.values(_lateBySku).map(s=>({sku:s.sku,dests:[...s.dests].join(', '),destCt:s.dests.size,qty:s.qty,maxDays:s.maxDays})).sort((a,b)=>b.maxDays-a.maxDays);
+    if(topSkus.length){
+      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;margin:var(--sp-sm) 0 var(--sp-xs);font-weight:500">Top Late SKUs</div>`;
       riskH+=`<table class="sc-arr"><thead><tr><th>SKU</th><th>Dests</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th></tr></thead><tbody>`;
       topSkus.slice(0,10).forEach(s=>{
         const severity=s.maxDays>=10?'#f87171':s.maxDays>=5?'#fb923c':'#fbbf24';
@@ -960,6 +957,8 @@ function renderSC(){
       });
       riskH+=`</tbody></table>`;
     }
+    // Snapshot timestamp
+    if(snap.ts)riskH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-top:var(--sp-sm);opacity:.3">Snapshot: ${new Date(snap.ts).toLocaleString()}</div>`;
   } else {
     riskH+=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:var(--sp-sm);padding:var(--sp-lg)">`;
     riskH+=`<div style="font-family:'Space Mono',monospace;font-size:var(--fs-lg);color:var(--gn);font-weight:700;text-shadow:0 0 16px rgba(52,211,153,.3)">✓</div>`;
