@@ -136,7 +136,7 @@
   .sc-kpi .sc-sub{font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--td);margin-top:2px;display:block;padding:0}
 
   /* Progress bar */
-  .sc-prog{height:clamp(4px,.3vw,8px);background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative}
+  .sc-prog{height:clamp(4px,.3vw,8px);background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;position:relative;margin:var(--sp-xs) 0}
   .sc-prog-fill{height:100%;border-radius:4px;transition:width .6s ease}
   .sc-prog-seg{height:100%;position:absolute;top:0;border-radius:4px;transition:width .6s ease}
 
@@ -150,8 +150,8 @@
 
   /* Tables for page 2 */
   .sc-arr{width:100%;border-collapse:collapse}
-  .sc-arr th{text-align:left;padding:3px var(--sp-sm);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.5px;color:var(--tm);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap}
-  .sc-arr td{padding:2px var(--sp-sm);border-bottom:1px solid rgba(255,255,255,.03);color:var(--td);font-size:var(--fs-xs)}
+  .sc-arr th{text-align:left;padding:var(--sp-xs) var(--sp-sm);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.5px;color:var(--tm);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap}
+  .sc-arr td{padding:var(--sp-xs) var(--sp-sm);border-bottom:1px solid rgba(255,255,255,.03);color:var(--td);font-size:var(--fs-xs)}
   .sc-arr .arr-name{color:var(--tx);font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sc-arr .arr-val{font-family:'Space Mono',monospace;font-weight:700;text-align:right;white-space:nowrap}
 
@@ -207,9 +207,9 @@
 <div class="page" id="page2">
 <div class="main" style="flex-direction:column;overflow:hidden">
   <!-- Top KPI strip -->
-  <div style="padding:var(--sp-sm) var(--sp-sm) 0;flex-shrink:0">
+  <div style="padding:var(--sp-sm) var(--sp-sm) var(--sp-xs);flex-shrink:0">
     <div class="sc-kpis" id="sc-kpis"></div>
-    <div class="sc-prog" id="sc-prog-overall" style="margin:var(--sp-xs) 0 0"></div>
+    <div class="sc-prog" id="sc-prog-overall"></div>
   </div>
   <!-- 4-column grid -->
   <div class="sc-grid">
@@ -790,7 +790,7 @@ function renderSC(){
   lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);margin-bottom:var(--sp-sm);opacity:.6">${lpPct}% dispatched · ${Ri(lpTotalQty).toLocaleString()} total qty</div>`;
   // Dispatch queue
   if(nextToShipDisplay.length){
-    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Dispatch Queue</div>`;
+    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:var(--sp-sm) 0 var(--sp-xs)">Dispatch Queue</div>`;
     lpH+=`<table class="sc-arr"><tbody>`;
     nextToShipDisplay.forEach(t=>{
       lpH+=_scTruckRow('LP-'+t.id,lsrNumbers[t.id]||'',matchDestName(t.dest),fd(new Date(t.date+'T12:00:00')),R(t.plt),'var(--ip)',false);
@@ -800,7 +800,7 @@ function renderSC(){
   // Recently sent
   const sentArr=lpList.filter(t=>_isSent(t)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
   if(sentArr.length){
-    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-top:var(--sp-sm)">Recently Sent</div>`;
+    lpH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:var(--sp-sm) 0 var(--sp-xs)">Recently Sent</div>`;
     lpH+=`<table class="sc-arr"><tbody>`;
     sentArr.forEach(t=>{
       lpH+=_scTruckRow('LP-'+t.id,lsrNumbers[t.id]||'',matchDestName(t.dest),'',R(t.plt),'var(--gn)',true);
@@ -839,7 +839,7 @@ function renderSC(){
   // LM truck table with kit columns from snapshot
   const lmNextTrucks=snap.lmNextTrucks||[];
   if(lmNextTrucks.length){
-    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Next LM Trucks</div>`;
+    lmH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:var(--sp-sm) 0 var(--sp-xs)">Next LM Trucks</div>`;
     lmH+=`<table class="sc-arr"><thead><tr><th>Truck</th><th>Destination</th><th>Date</th><th style="text-align:right">Plt</th><th style="text-align:right;color:#7db4fc">🔧</th><th style="text-align:right;color:#fcd050">📎</th></tr></thead><tbody>`;
     lmNextTrucks.forEach(t=>{
       const dateStr=t.dd?fd(new Date(t.dd+'T12:00:00')):'';
@@ -869,7 +869,7 @@ function renderSC(){
     arrH+=`<div class="sc-prog" style=""><div class="sc-prog-fill" style="width:${arrPct}%;background:var(--gn)"></div></div>`;
     // Arrivals queue (upcoming)
     if(inUpcoming.length){
-      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Arrivals Queue</div>`;
+      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-bottom:var(--sp-xs)">Arrivals Queue</div>`;
       arrH+=`<table class="sc-arr"><thead><tr><th>Source</th><th>Type</th><th>Ready</th><th style="text-align:right">SKUs</th></tr></thead><tbody>`;
       inUpcoming.slice(0,10).forEach(c=>{
         const dateStr=c.readyDate&&c.readyDate!=='—'?fd(new Date(c.readyDate+'T12:00:00')):'—';
@@ -883,7 +883,7 @@ function renderSC(){
     }
     // Recently arrived
     if(inArrived.length){
-      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-top:var(--sp-sm)">Recently Arrived</div>`;
+      arrH+=`<div style="font-size:var(--fs-xs);color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:var(--sp-sm) 0 var(--sp-xs)">Recently Arrived</div>`;
       arrH+=`<table class="sc-arr"><tbody>`;
       inArrived.slice(-6).reverse().forEach(c=>{
         arrH+=`<tr style="opacity:.5"><td class="arr-name" style="color:var(--gn)">${esc(c.name)}</td>`;
@@ -927,7 +927,7 @@ function renderSC(){
     // Critical SKUs — sorted by impact (daysLate × qty)
     const lateBySku=snap.lateBySku||[];
     if(lateBySku.length){
-      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-top:var(--sp-sm)">Critical SKUs · Impact (days × qty)</div>`;
+      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:var(--sp-sm) 0 var(--sp-xs)">Critical SKUs · Impact (days × qty)</div>`;
       riskH+=`<table class="sc-arr"><thead><tr><th>SKU</th><th>Name</th><th style="text-align:right">Dests</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th><th style="text-align:right">Impact</th></tr></thead><tbody>`;
       lateBySku.slice(0,15).forEach(s=>{
         const sev=s.maxDays>=10?'#f87171':s.maxDays>=5?'#fb923c':'#fbbf24';
