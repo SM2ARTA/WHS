@@ -771,10 +771,12 @@ function renderSC(){
     scKpi(lpReady,'LP Ready','#38bdf8')+
     scKpi(lpPending,'LP Pending',lpPending>0?'var(--op)':'var(--gn)');
 
-  // Overall progress bar
+  // Overall progress bar — LP dispatched + LP ready as fraction of ALL trucks
+  const overallDispPct=_allTrucks>0?Math.round(lpDispatched/_allTrucks*100):0;
+  const overallRdyPct=_allTrucks>0?Math.round(lpReady/_allTrucks*100):0;
   document.getElementById('sc-prog-overall').innerHTML=
-    `<div class="sc-prog-seg" style="width:${lpPct}%;background:var(--gn);z-index:2"></div>`+
-    `<div class="sc-prog-seg" style="width:${lpPct+rdPct}%;background:var(--ip);z-index:1"></div>`;
+    `<div class="sc-prog-seg" style="width:${overallDispPct}%;background:var(--gn);z-index:2"></div>`+
+    `<div class="sc-prog-seg" style="width:${overallDispPct+overallRdyPct}%;background:var(--ip);z-index:1"></div>`;
 
   // ── LP Section ──
   const lpEl=document.getElementById('sc-lp');
