@@ -164,7 +164,7 @@
   .page-timer{position:fixed;bottom:clamp(6px,.5vh,12px);left:50%;transform:translateX(-50%) translateY(-14px);font-family:'Space Mono',monospace;font-size:var(--fs-xs);color:var(--tm);opacity:.3;z-index:100}
 
   /* ── Page 2: Supply Chain Status ── */
-  .sc-grid{display:grid;grid-template-columns:1fr 1.2fr 1fr 1fr;grid-template-rows:1fr auto;gap:var(--sp-sm);padding:var(--sp-sm);flex:1;overflow:hidden}
+  .sc-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1.4fr;grid-template-rows:1fr auto;gap:var(--sp-sm);padding:var(--sp-sm);flex:1;overflow:hidden}
   .sc-section{background:linear-gradient(180deg,rgba(255,255,255,.018) 0%,rgba(255,255,255,.005) 100%);border:1px solid var(--bd);border-radius:5px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.2)}
   .sc-section.sc-wide{grid-column:span 4}
   .sc-sh{padding:var(--sp-sm) var(--sp-md);border-bottom:1px solid var(--bd);display:flex;align-items:center;flex-shrink:0;background:linear-gradient(180deg,rgba(255,255,255,.012) 0%,transparent 100%)}
@@ -196,7 +196,7 @@
   /* Tables for page 2 */
   .sc-arr{width:100%;border-collapse:collapse}
   .sc-arr th{text-align:left;padding:var(--sp-xs) var(--sp-sm);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.5px;color:var(--tm);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap}
-  .sc-arr td{padding:var(--sp-xs) var(--sp-sm);border-bottom:1px solid rgba(255,255,255,.03);color:var(--td);font-size:var(--fs-xs)}
+  .sc-arr td{padding:var(--sp-xs) var(--sp-sm);border-bottom:1px solid rgba(255,255,255,.03);color:var(--td);font-size:var(--fs-sm)}
   .sc-arr .arr-name{color:var(--tx);font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sc-arr .arr-val{font-family:'Space Mono',monospace;font-weight:700;text-align:right;white-space:nowrap}
 
@@ -964,32 +964,31 @@ function renderSC(){
     riskH+=scKpiSm('trucks',lateTrucks,'#f87171');
     riskH+=scKpiSm('max','+'+lateMaxDays+'d','#f87171');
     riskH+=`</div>`;
-    // Late by destination sorted by maxDays
-    riskH+=`<table class="sc-arr"><thead><tr><th style="text-align:left">Destination</th><th>Path</th><th style="text-align:right">SKUs</th><th style="text-align:right">Trk</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th></tr></thead><tbody>`;
-    lateByDest.forEach(d=>{
+    // Late by destination — top 12, sorted by maxDays
+    const _topDest=lateByDest.slice(0,12);
+    const _restDest=lateByDest.length-_topDest.length;
+    riskH+=`<table class="sc-arr"><thead><tr><th>Destination</th><th style="text-align:right">SKUs</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th></tr></thead><tbody>`;
+    _topDest.forEach(d=>{
       const sev=d.maxDays>=10?'#f87171':d.maxDays>=5?'#fb923c':'#fbbf24';
       riskH+=`<tr>`;
-      riskH+=`<td class="arr-name" style="text-align:left">${esc(d.dest)}</td>`;
-      riskH+=`<td><span class="db ${(d.path||'LP')==='LP'?'sb-bl':'sb-or'}" style="font-size:var(--fs-xs)">${esc(d.path||'LP')}</span></td>`;
+      riskH+=`<td class="arr-name"><span class="db ${(d.path||'LP')==='LP'?'sb-bl':'sb-or'}" style="font-size:var(--fs-xs);margin-right:4px">${esc(d.path||'LP')}</span>${esc(d.dest)}</td>`;
       riskH+=`<td class="arr-val">${d.skus}</td>`;
-      riskH+=`<td class="arr-val">${d.trucks}</td>`;
       riskH+=`<td class="arr-val">${Ri(d.qty).toLocaleString()}</td>`;
       riskH+=`<td class="arr-val" style="color:${sev};font-weight:700">+${d.maxDays}d</td>`;
       riskH+=`</tr>`;
     });
     riskH+=`</tbody></table>`;
-    // Critical SKUs — sorted by impact (daysLate × qty)
+    if(_restDest>0)riskH+=`<div style="font-size:var(--fs-xs);color:var(--tm);opacity:.5;margin-top:var(--sp-xs)">+${_restDest} more destinations</div>`;
+    // Critical SKUs — top 8 by impact
     const lateBySku=snap.lateBySku||[];
     if(lateBySku.length){
-      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:var(--sp-sm) 0 var(--sp-xs)">Critical SKUs · Impact (days × qty)</div>`;
-      riskH+=`<table class="sc-arr"><thead><tr><th>SKU</th><th>Name</th><th style="text-align:right">Dests</th><th style="text-align:right">Qty</th><th style="text-align:right">Late</th><th style="text-align:right">Impact</th></tr></thead><tbody>`;
-      lateBySku.slice(0,15).forEach(s=>{
+      riskH+=`<div style="font-size:var(--fs-xs);color:#f87171;text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:var(--sp-sm) 0 var(--sp-xs)">Critical SKUs</div>`;
+      riskH+=`<table class="sc-arr"><thead><tr><th>SKU</th><th>Name</th><th style="text-align:right">Late</th><th style="text-align:right">Impact</th></tr></thead><tbody>`;
+      lateBySku.slice(0,8).forEach(s=>{
         const sev=s.maxDays>=10?'#f87171':s.maxDays>=5?'#fb923c':'#fbbf24';
         riskH+=`<tr>`;
-        riskH+=`<td style="font-family:'Space Mono',monospace;font-weight:500;color:var(--tx)">${esc(s.sku)}</td>`;
-        riskH+=`<td class="arr-name" style="max-width:120px">${esc(s.name)}</td>`;
-        riskH+=`<td class="arr-val">${s.dests}</td>`;
-        riskH+=`<td class="arr-val">${Ri(s.qty).toLocaleString()}</td>`;
+        riskH+=`<td style="font-family:'Space Mono',monospace;font-weight:500;color:var(--tx);white-space:nowrap">${esc(s.sku)}</td>`;
+        riskH+=`<td class="arr-name" style="max-width:140px">${esc(s.name)}</td>`;
         riskH+=`<td class="arr-val" style="color:${sev};font-weight:700">+${s.maxDays}d</td>`;
         riskH+=`<td class="arr-val" style="color:${sev};font-weight:700">${Ri(s.impact).toLocaleString()}</td>`;
         riskH+=`</tr>`;
