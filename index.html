@@ -594,12 +594,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')clM();});
 
 // ── THEME TOGGLE ──
 function toggleTheme(){
-  const isLight=document.body.classList.toggle('light');
-  document.getElementById('themeBtn').textContent=isLight?'DARK':'LIGHT';
-  sessionStorage.setItem('fwc26_theme',isLight?'light':'dark');
+  var isLight=document.body.className.indexOf('light')>=0;
+  if(isLight){document.body.className=document.body.className.replace('light','').trim();isLight=false}
+  else{document.body.className+=' light';isLight=true}
+  var b=document.getElementById('themeBtn');if(b)b.textContent=isLight?'DARK':'LIGHT';
+  try{sessionStorage.setItem('fwc26_theme',isLight?'light':'dark')}catch(e){}
 }
 // Restore theme on load
-if(sessionStorage.getItem('fwc26_theme')==='light'){document.body.classList.add('light');const b=document.getElementById('themeBtn');if(b)b.textContent='DARK'}
+try{if(sessionStorage.getItem('fwc26_theme')==='light'){document.body.className+=' light'}}catch(e){}
+// Also support ?theme=light URL param
+if(window.location.search.indexOf('theme=light')>=0){document.body.className+=' light';try{sessionStorage.setItem('fwc26_theme','light')}catch(e){}}
 
 // ── PAGE ROTATION ──
 const PAGE_TITLES=['Dallas Main Logistics Center — Activity Forecast','FF&E Supply Chain Status'];
