@@ -397,7 +397,7 @@ function go(){
     else if(k==='fm-rw'){
       const items = ex(v,k,'LP');
       lg(`  Extracted ${items.length} items from "fm-rw" (LM data)`);
-      items.forEach(i=>{ iI.push(i); }); // fm-rw rows are all inbound arrivals
+      items.forEach(i=>{ (i.direction==='outbound'?oI:iI).push(i); });
     }
     // LM dispatch/mile data
     else if((kl.includes('lm')||kl.includes('last mile')||kl.includes('dispatch'))&&!kl.includes('lp')&&k!=='fm-rw'){
