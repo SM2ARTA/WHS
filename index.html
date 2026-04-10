@@ -390,8 +390,7 @@ function go(){
       items.forEach(i=>{
         if(!i.lsr && i.truckId && lsrMap[i.truckId]) i.lsr = lsrMap[i.truckId];
         if(!i.lsr && i.truckId && lsrMap[String(i.truckId)]) i.lsr = lsrMap[String(i.truckId)];
-        if(i.direction==='outbound'||k!=='lp-arrivals') oI.push(i);
-        else iI.push(i);
+        (i.direction==='outbound'?oI:iI).push(i);
       });
     }
     // FM-RW: LM material plan rows (contains inbound arrivals with dates)
@@ -504,6 +503,8 @@ function pr(e,sk,src,idx){
   let bg=src;
   if(tp){const t=String(tp).toLowerCase();if(t.includes('ffe')||t.includes('ff&e'))bg='FF&E';else if(t.includes('cort'))bg='CORT';else if(t.includes('freight'))bg='FREIGHT';else if(t.includes('truck')||t.includes('dispatch'))bg='TRUCK';else if(t.includes('manual'))bg='MANUAL';else bg=String(tp).toUpperCase().substring(0,10);}
   const nm=iN?String(iN):(vendor?String(vendor):`${src} #${idx}`);
+  // Kit SKUs are outbound (WHS → venue), never inbound arrivals
+  if(d2==='inbound'&&iN&&/^(FNKIT|OSKIT)-/i.test(String(iN)))d2='outbound';
   return{date:date?String(date):null,vendor:nm,itemName:nm,venue,pallets:plt?Number(plt):0,pieces:pcs?Number(pcs):0,truckId:tid?String(tid):null,type:bg,direction:d2,source:src,container:cont,lsr:lsr?String(lsr):null,_raw:e};
 }
 
